@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin, isConfigured } from "@/lib/supabase";
 import { fetchAllNews } from "@/lib/scrapers/rss-parser";
+import { scrapeAllOpportunities } from "@/lib/scrapers/opportunity-scraper";
 
 export async function GET(request: NextRequest) {
   if (!isConfigured) {
@@ -22,40 +23,96 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const articles = await fetchAllNews();
+    const mode = request.nextUrl.searchParams.get("mode") || "all";
 
-    let inserted = 0;
-    let skipped = 0;
+    const result: Record<string, any> = {};
 
-    for (const article of articles) {
-      const { data: existing } = await supabaseAdmin
-        .from("news_articles")
-        .select("id")
-        .eq("source_url", article.source_url)
-        .maybeSingle();
+    if (mode === "news" || mode === "all") {
+      const articles = await fetchAllNews();
+      let newsInserted = 0;
+      let newsSkipped = 0;
 
-      if (existing) {
-        skipped++;
-        continue;
+      for (const article of articles) {
+        const { data: existing } = await supabaseAdmin
+          .from("news_articles")
+          .select("id")
+          .eq("source_url", article.source_url)
+          .maybeSingle();
+
+        if (existing) {
+          newsSkipped++;
+          continue;
+        }
+
+        const { error } = await supabaseAdmin
+          .from("news_articles")
+          .insert([article]);
+
+        if (!error) newsInserted++;
       }
 
-      const { error } = await supabaseAdmin
-        .from("news_articles")
-        .insert([article]);
+      result.news = {
+        total_fetched: articles.length,
+        inserted: newsInserted,
+        skipped: newsSkipped,
+      };
+    }
 
-      if (!error) inserted++;
+    if (mode === "opportunities" || mode === "all") {
+      const { opportunities, results: scrapeResults, total } = await scrapeAllOpportunities();
+      let oppInserted = 0;
+      let oppSkipped = 0;
+
+      for (const opp of opportunities) {
+        const { data: existing } = await supabaseAdmin
+          .from("opportunities")
+          .select("id")
+          .eq("source_url", opp.source_url)
+          .maybeSingle();
+
+        if (existing) {
+          oppSkipped++;
+          continue;
+        }
+
+        const { error } = await supabaseAdmin
+          .from("opportunities")
+          .insert([
+            {
+              title: opp.title,
+              organization: opp.organization,
+              category: opp.category,
+              location: opp.location,
+              stipend: opp.stipend,
+              deadline: opp.deadline,
+              eligibility: opp.eligibility,
+              description: opp.description,
+              apply_link: opp.apply_link,
+              source_url: opp.source_url,
+              tags: opp.tags,
+              is_active: true,
+            },
+          ]);
+
+        if (!error) oppInserted++;
+      }
+
+      result.opportunities = {
+        sources: scrapeResults,
+        total_fetched: total,
+        inserted: oppInserted,
+        skipped: oppSkipped,
+      };
     }
 
     return NextResponse.json({
-      message: "Scrape complete",
-      total_fetched: articles.length,
-      inserted,
-      skipped,
+      message: `Scrape complete (${mode})`,
+      ...result,
     });
   } catch (error) {
-    console.error("Error scraping news:", error);
+    console.error("Error in scrape endpoint:", error);
     return NextResponse.json(
-      { error: "Failed to scrape news" },
+      { error: "Failed to scrape" },
       { status: 500 }
     );
   }

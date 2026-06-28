@@ -28,13 +28,16 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase query error:", JSON.stringify(error));
+      throw error;
+    }
 
-    return NextResponse.json({ articles: data, count: data?.length || 0 });
+    return NextResponse.json({ articles: data || [], count: data?.length || 0 });
   } catch (error) {
     console.error("Error fetching news:", error);
     return NextResponse.json(
-      { error: "Failed to fetch news" },
+      { error: error instanceof Error ? error.message : "Failed to fetch news" },
       { status: 500 }
     );
   }

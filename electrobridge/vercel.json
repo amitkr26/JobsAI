@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/scrape?mode=news",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/scrape?mode=opportunities",
+      "schedule": "0 0 */2 * *"
+    }
+  ]
+}

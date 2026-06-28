@@ -1,7 +1,5 @@
 import Parser from "rss-parser";
 
-const parser = new Parser();
-
 export const NEWS_SOURCES = [
   {
     name: "IEEE Spectrum",
@@ -28,6 +26,16 @@ export const NEWS_SOURCES = [
     url: "https://www.thehindu.com/sci-tech/science/feeder/default.rss",
     tags: ["India", "science"],
   },
+  {
+    name: "Physics World",
+    url: "https://physicsworld.com/feed/",
+    tags: ["physics", "research", "science"],
+  },
+  {
+    name: "Nature Electronics",
+    url: "https://www.nature.com/natelectron.rss",
+    tags: ["electronics", "research", "nature"],
+  },
 ];
 
 export interface ParsedArticle {
@@ -40,12 +48,18 @@ export interface ParsedArticle {
   tags: string[];
 }
 
-export async function fetchRSSFeed(
+async function fetchRSSFeed(
   source: string,
   feedUrl: string,
   defaultTags: string[]
 ): Promise<ParsedArticle[]> {
   try {
+    const parser = new Parser({
+      timeout: 8000,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; ElectroBridge/1.0)",
+      },
+    });
     const feed = await parser.parseURL(feedUrl);
     return feed.items.map((item) => ({
       title: item.title || "Untitled",
@@ -66,10 +80,14 @@ export async function fetchRSSFeed(
 }
 
 export async function fetchAllNews(): Promise<ParsedArticle[]> {
-  const results = await Promise.all(
-    NEWS_SOURCES.map((source) =>
-      fetchRSSFeed(source.name, source.url, source.tags)
-    )
-  );
-  return results.flat();
+  const results: ParsedArticle[] = [];
+  for (const source of NEWS_SOURCES) {
+    try {
+      const articles = await fetchRSSFeed(source.name, source.url, source.tags);
+      results.push(...articles);
+    } catch {
+      // per-feed error already logged
+    }
+  }
+  return results;
 }
