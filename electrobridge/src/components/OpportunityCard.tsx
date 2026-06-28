@@ -5,7 +5,8 @@ import { MapPin, Currency, Bookmark, ExternalLink } from "lucide-react";
 import type { Opportunity } from "@/types";
 import CategoryBadge from "./CategoryBadge";
 import DeadlineCountdown from "./DeadlineCountdown";
-import { cn } from "@/lib/utils";
+import { cn, getDaysAgo, isNew } from "@/lib/utils";
+import ShareButtons from "./ShareButtons";
 
 interface OpportunityCardProps {
   opportunity: Opportunity;
@@ -80,9 +81,27 @@ export default function OpportunityCard({
               />
             </button>
           </div>
-          <p className="text-text-muted text-xs mt-1">
-            {opportunity.organization}
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <Link
+              href={`/organizations/${opportunity.organization
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-|-$/g, "")}`}
+              className="text-text-muted text-xs hover:text-cyan transition-colors"
+            >
+              {opportunity.organization}
+            </Link>
+            {opportunity.posted_at && (
+              <span className="text-gray-600 text-[10px]">
+                {getDaysAgo(opportunity.posted_at)}
+              </span>
+            )}
+            {opportunity.posted_at && isNew(opportunity.posted_at) && (
+              <span className="px-1.5 py-0.5 bg-green-900/40 text-green-400 rounded text-[10px] font-semibold border border-green-500/30">
+                NEW
+              </span>
+            )}
+          </div>
           <div className="flex flex-wrap items-center gap-2 mt-3">
             <CategoryBadge category={opportunity.category} />
             {opportunity.location && (
@@ -121,6 +140,14 @@ export default function OpportunityCard({
               View Details
               <ExternalLink className="w-3 h-3" />
             </Link>
+          </div>
+          <div className="mt-3 pt-3 border-t border-gray-800/50">
+            <ShareButtons
+              title={opportunity.title}
+              organization={opportunity.organization}
+              deadline={opportunity.deadline}
+              opportunityUrl={`https://electrobridge.vercel.app/opportunities/${opportunity.id}`}
+            />
           </div>
         </div>
       </div>

@@ -23,7 +23,7 @@ export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<"opportunities" | "add" | "subscribers" | "sources" | "logs">(
+  const [activeTab, setActiveTab] = useState<"opportunities" | "add" | "subscribers" | "sources" | "logs" | "popular">(
     "opportunities"
   );
 
@@ -236,7 +236,7 @@ export default function AdminPage() {
       </h1>
 
       <div className="flex gap-2 mb-6 border-b border-gray-800 pb-4 overflow-x-auto">
-        {(["opportunities", "add", "subscribers", "sources", "logs"] as const).map((tab) => (
+        {(["opportunities", "add", "subscribers", "sources", "logs", "popular"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -254,6 +254,8 @@ export default function AdminPage() {
               ? "Subscribers"
               : tab === "sources"
               ? "News Sources"
+              : tab === "popular"
+              ? "Most Popular"
               : "Scrape Logs"}
           </button>
         ))}
@@ -537,6 +539,16 @@ export default function AdminPage() {
                     {source.url}
                   </p>
                   <div className="flex gap-1.5 mt-1.5">
+                    {(source as any).type === "opportunity" && (
+                      <span className="px-2 py-0.5 bg-purple-900/40 text-purple-400 rounded text-[10px] border border-purple-500/30">
+                        Opportunities
+                      </span>
+                    )}
+                    {(!(source as any).type || (source as any).type === "news") && (
+                      <span className="px-2 py-0.5 bg-cyan-900/40 text-cyan-400 rounded text-[10px] border border-cyan-500/30">
+                        News
+                      </span>
+                    )}
                     {source.tags.map((tag) => (
                       <span
                         key={tag}
@@ -567,6 +579,63 @@ export default function AdminPage() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {activeTab === "popular" && (
+        <div>
+          <h2 className="font-display text-xl font-bold text-text-primary mb-4">
+            Most Popular Opportunities
+          </h2>
+          {loading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="w-6 h-6 text-cyan animate-spin" />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-800 text-text-muted">
+                    <th className="text-left py-3 px-2">Title</th>
+                    <th className="text-left py-3 px-2">Organization</th>
+                    <th className="text-left py-3 px-2">Clicks</th>
+                    <th className="text-left py-3 px-2">Category</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...opportunities]
+                    .sort((a, b) => (b.apply_clicks || 0) - (a.apply_clicks || 0))
+                    .filter((o) => (o.apply_clicks || 0) > 0)
+                    .map((opp) => (
+                      <tr
+                        key={opp.id}
+                        className="border-b border-gray-800/50 hover:bg-gray-800/30"
+                      >
+                        <td className="py-3 px-2 text-text-primary max-w-[200px] truncate">
+                          {opp.title}
+                        </td>
+                        <td className="py-3 px-2 text-text-muted">
+                          {opp.organization}
+                        </td>
+                        <td className="py-3 px-2">
+                          <span className="text-cyan font-semibold">
+                            {opp.apply_clicks || 0}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2">{opp.category}</td>
+                      </tr>
+                    ))}
+                  {opportunities.filter((o) => (o.apply_clicks || 0) > 0).length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="py-8 text-center text-text-muted">
+                        No click data yet. Apply clicks will appear here once users start applying.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 

@@ -5,54 +5,59 @@ import type { Opportunity, NewsArticle } from "@/types";
 import OpportunityCard from "@/components/OpportunityCard";
 import NewsCard from "@/components/NewsCard";
 import SubscribeSection from "@/components/SubscribeSection";
+import ExpiringSoon from "@/components/ExpiringSoon";
 
 async function getStats() {
   if (!supabase?.from) {
-    return { total: 0, jrf: 0, phd: 0, govt: 0, news: 0 };
+    return { total: 0, jrf: 0, phd: 0, govt: 0, addedThisWeek: 0, newsToday: 0 };
   }
+
+  const today = new Date().toISOString().split("T")[0];
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
   const [
     { count: totalActive },
     { count: jrfCount },
     { count: phdCount },
-    { count: govtCount },
-    { count: newsCount },
+    { count: addedThisWeekCount },
     { count: newsTodayCount },
   ] = await Promise.all([
     supabase
       .from("opportunities")
       .select("*", { count: "exact", head: true })
-      .eq("is_active", true),
+      .eq("is_active", true)
+      .or(`deadline.gte.${today},deadline.is.null`),
     supabase
       .from("opportunities")
       .select("*", { count: "exact", head: true })
       .eq("is_active", true)
-      .eq("category", "JRF"),
+      .eq("category", "JRF")
+      .or(`deadline.gte.${today},deadline.is.null`),
     supabase
       .from("opportunities")
       .select("*", { count: "exact", head: true })
       .eq("is_active", true)
-      .eq("category", "PhD"),
+      .eq("category", "PhD")
+      .or(`deadline.gte.${today},deadline.is.null`),
     supabase
       .from("opportunities")
       .select("*", { count: "exact", head: true })
       .eq("is_active", true)
-      .eq("category", "Govt Job"),
+      .gte("posted_at", weekAgo)
+      .or(`deadline.gte.${today},deadline.is.null`),
     supabase
       .from("news_articles")
-      .select("*", { count: "exact", head: true }),
-    supabase
-      .from("news_articles")
       .select("*", { count: "exact", head: true })
-      .gte("published_at", new Date().toISOString().split("T")[0]),
+      .gte("published_at", yesterday),
   ]);
 
   return {
     total: totalActive || 0,
     jrf: jrfCount || 0,
     phd: phdCount || 0,
-    govt: govtCount || 0,
-    news: newsCount || 0,
+    govt: 0,
+    addedThisWeek: addedThisWeekCount || 0,
     newsToday: newsTodayCount || 0,
   };
 }
@@ -165,7 +170,7 @@ export default async function Home() {
             <p className="text-2xl font-bold text-purple font-display">
               {stats.jrf}
             </p>
-            <p className="text-text-muted text-xs mt-1">JRF/SRF Positions</p>
+            <p className="text-text-muted text-xs mt-1">JRF Positions</p>
           </div>
           <div className="bg-navy-light border border-gray-800 rounded-lg p-4 text-center">
             <p className="text-2xl font-bold text-success font-display">
@@ -175,12 +180,14 @@ export default async function Home() {
           </div>
           <div className="bg-navy-light border border-gray-800 rounded-lg p-4 text-center">
             <p className="text-2xl font-bold text-warning font-display">
-              {stats.newsToday}
+              {stats.addedThisWeek}
             </p>
-            <p className="text-text-muted text-xs mt-1">News Today</p>
+            <p className="text-text-muted text-xs mt-1">Added This Week</p>
           </div>
         </div>
       </section>
+
+      <ExpiringSoon />
 
       {opportunities.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">

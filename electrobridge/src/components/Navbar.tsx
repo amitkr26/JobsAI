@@ -26,6 +26,12 @@ export default function Navbar() {
               News
             </Link>
             <Link
+              href="/organizations"
+              className="text-text-muted hover:text-text-primary transition-colors text-sm font-medium"
+            >
+              Organizations
+            </Link>
+            <Link
               href="/admin"
               className="text-text-muted hover:text-text-primary transition-colors text-sm font-medium"
             >

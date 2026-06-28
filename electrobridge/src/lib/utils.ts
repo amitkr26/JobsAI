@@ -24,6 +24,30 @@ export function isExpired(deadline: string): boolean {
   return getDaysUntilDeadline(deadline) < 0;
 }
 
+export function getDaysAgo(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diff = now.getTime() - date.getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  if (days < 0) return "Just now";
+  if (days === 0) return "Posted today";
+  if (days === 1) return "Posted yesterday";
+  if (days <= 7) return `Posted ${days} days ago`;
+  if (days <= 14) return `Posted ${Math.floor(days / 7)} week ago`;
+  if (days <= 30) return `Posted ${Math.floor(days / 7)} weeks ago`;
+  if (days <= 365) return `Posted ${Math.floor(days / 30)} months ago`;
+  return `Posted ${Math.floor(days / 365)} years ago`;
+}
+
+export function isNew(dateString: string): boolean {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diff = now.getTime() - date.getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  return days <= 3;
+}
+
 export const CATEGORY_COLORS: Record<string, string> = {
   JRF: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
   SRF: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",

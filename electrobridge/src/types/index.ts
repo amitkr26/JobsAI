@@ -12,6 +12,8 @@ export interface Opportunity {
   source_url?: string | null;
   is_active?: boolean;
   created_at?: string;
+  posted_at?: string;
+  apply_clicks?: number;
   tags: string[];
 }
 

@@ -5,6 +5,9 @@ import { supabase } from "@/lib/supabase";
 import { formatDate, isExpired } from "@/lib/utils";
 import CategoryBadge from "@/components/CategoryBadge";
 import DeadlineCountdown from "@/components/DeadlineCountdown";
+import ApplyButton from "@/components/ApplyButton";
+import ShareButtons from "@/components/ShareButtons";
+import SimilarOpportunities from "@/components/SimilarOpportunities";
 
 interface Props {
   params: { id: string };
@@ -162,17 +165,35 @@ export default async function OpportunityDetailPage({ params }: Props) {
         )}
 
         {opportunity.apply_link && (
-          <a
-            href={opportunity.apply_link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-cyan text-navy font-semibold rounded-lg px-6 py-3 hover:bg-cyan/90 transition-colors"
-          >
-            Apply Now
-            <ExternalLink className="w-4 h-4" />
-          </a>
+          <div className="flex items-center gap-3 flex-wrap">
+            <ApplyButton
+              applyLink={opportunity.apply_link}
+              opportunityId={opportunity.id!}
+            />
+            <a
+              href={`/api/calendar-export/${opportunity.id}`}
+              className="inline-flex items-center gap-2 border border-gray-700 text-text-primary font-medium rounded-lg px-4 py-2.5 text-sm hover:border-cyan/50 transition-colors"
+              download
+            >
+              📅 Add to Calendar
+            </a>
+          </div>
         )}
+
+        <div className="mt-6">
+          <ShareButtons
+            title={opportunity.title}
+            organization={opportunity.organization}
+            deadline={opportunity.deadline}
+            opportunityUrl={`https://electrobridge.vercel.app/opportunities/${opportunity.id}`}
+          />
+        </div>
       </div>
+
+      <SimilarOpportunities
+        currentId={opportunity.id}
+        tags={opportunity.tags || []}
+      />
     </div>
   );
 }

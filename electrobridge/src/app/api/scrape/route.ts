@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin, isConfigured } from "@/lib/supabase";
-import { fetchAllNews } from "@/lib/scrapers/rss-parser";
+import { fetchAllNews, fetchOpportunitiesFromRSS } from "@/lib/scrapers/rss-parser";
 import { scrapeAllOpportunities } from "@/lib/scrapers/opportunity-scraper";
 
 export async function GET(request: NextRequest) {
@@ -59,11 +59,13 @@ export async function GET(request: NextRequest) {
     }
 
     if (mode === "opportunities" || mode === "all") {
-      const { opportunities, results: scrapeResults, total } = await scrapeAllOpportunities();
+      const { opportunities: scrapedOpps, results: scrapeResults, total } = await scrapeAllOpportunities();
+      const rssOpps = await fetchOpportunitiesFromRSS();
+      const allOpportunities = [...scrapedOpps, ...rssOpps];
       let oppInserted = 0;
       let oppSkipped = 0;
 
-      for (const opp of opportunities) {
+      for (const opp of allOpportunities) {
         const { data: existing } = await supabaseAdmin
           .from("opportunities")
           .select("id")
@@ -99,9 +101,10 @@ export async function GET(request: NextRequest) {
 
       result.opportunities = {
         sources: scrapeResults,
-        total_fetched: total,
+        total_fetched: allOpportunities.length,
         inserted: oppInserted,
         skipped: oppSkipped,
+        rss_sources: rssOpps.length,
       };
     }
 

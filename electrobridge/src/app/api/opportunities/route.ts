@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase, supabaseAdmin, isConfigured } from "@/lib/supabase";
+import { postToTelegram } from "@/lib/telegram-bot";
 
 export async function GET(request: NextRequest) {
   if (!isConfigured) {
@@ -101,7 +102,14 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error;
 
-    return NextResponse.json({ opportunity: data?.[0] }, { status: 201 });
+    const newOpportunity = data?.[0];
+    if (newOpportunity) {
+      postToTelegram(newOpportunity).catch((e) =>
+        console.error("Telegram post failed (non-blocking):", e)
+      );
+    }
+
+    return NextResponse.json({ opportunity: newOpportunity }, { status: 201 });
   } catch (error) {
     console.error("Error creating opportunity:", error);
     return NextResponse.json(
