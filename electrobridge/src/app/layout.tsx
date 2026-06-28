@@ -16,6 +16,9 @@ export const metadata: Metadata = {
     "Your gateway to electronics and semiconductor opportunities. Find JRF, PhD, government jobs, private sector positions, and tech news — all in one place.",
   keywords:
     "electronics, semiconductor, JRF, PhD, jobs, India, research, VLSI, embedded systems",
+  verification: {
+    google: "QnEIBEpKxP_ZiQxtneegX-6WWKxO_FZ8Yzzxp4kOqxA",
+  },
 };
 
 export default function RootLayout({
