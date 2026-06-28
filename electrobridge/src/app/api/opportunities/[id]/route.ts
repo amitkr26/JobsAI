@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase, supabaseAdmin } from "@/lib/supabase";
+import { supabase, supabaseAdmin, isConfigured } from "@/lib/supabase";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!isConfigured) {
+    return NextResponse.json(
+      { error: "Database not configured." },
+      { status: 503 }
+    );
+  }
+
   try {
     const { data, error } = await supabase
       .from("opportunities")
@@ -34,7 +41,17 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!isConfigured) {
+    return NextResponse.json(
+      { error: "Database not configured." },
+      { status: 503 }
+    );
+  }
+
   try {
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: "Admin access not configured." }, { status: 503 });
+    }
     const body = await request.json();
     const { data, error } = await supabaseAdmin
       .from("opportunities")
@@ -58,7 +75,17 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!isConfigured) {
+    return NextResponse.json(
+      { error: "Database not configured." },
+      { status: 503 }
+    );
+  }
+
   try {
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: "Admin access not configured." }, { status: 503 });
+    }
     const { error } = await supabaseAdmin
       .from("opportunities")
       .delete()

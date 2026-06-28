@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, isConfigured } from "@/lib/supabase";
 import type { Opportunity, Subscriber } from "@/types";
 import { CATEGORIES } from "@/lib/utils";
 import { NEWS_SOURCES } from "@/lib/scrapers/rss-parser";
@@ -83,6 +83,11 @@ export default function AdminPage() {
 
   const fetchOpportunities = async () => {
     setLoading(true);
+    if (!isConfigured) {
+      setOpportunities([]);
+      setLoading(false);
+      return;
+    }
     const { data } = await supabase
       .from("opportunities")
       .select("*")
@@ -93,6 +98,11 @@ export default function AdminPage() {
 
   const fetchSubscribers = async () => {
     setLoading(true);
+    if (!isConfigured) {
+      setSubscribers([]);
+      setLoading(false);
+      return;
+    }
     const { data } = await supabase
       .from("subscribers")
       .select("*")

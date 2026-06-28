@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabase, isConfigured } from "@/lib/supabase";
 
 export async function POST(request: NextRequest) {
+  if (!isConfigured) {
+    return NextResponse.json(
+      { error: "Database not configured." },
+      { status: 503 }
+    );
+  }
+
   try {
     const body = await request.json();
     const { email, keywords, categories } = body;
@@ -22,8 +29,7 @@ export async function POST(request: NextRequest) {
           categories: categories || [],
           is_active: true,
         },
-      ])
-      .select();
+      ]);
 
     if (error) {
       if (error.code === "23505") {
@@ -36,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { subscriber: data?.[0], message: "Successfully subscribed!" },
+      { message: "Successfully subscribed!" },
       { status: 201 }
     );
   } catch (error) {
@@ -49,6 +55,13 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  if (!isConfigured) {
+    return NextResponse.json(
+      { error: "Database not configured." },
+      { status: 503 }
+    );
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const email = searchParams.get("email");

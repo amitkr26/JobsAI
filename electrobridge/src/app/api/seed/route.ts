@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin, isConfigured } from "@/lib/supabase";
 import { SEED_OPPORTUNITIES } from "@/lib/seed-data";
 
 export async function GET() {
+  if (!isConfigured) {
+    return NextResponse.json(
+      { error: "Database not configured." },
+      { status: 503 }
+    );
+  }
+
   try {
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: "Admin access not configured." }, { status: 503 });
+    }
     const { data: existing } = await supabaseAdmin
       .from("opportunities")
       .select("id")

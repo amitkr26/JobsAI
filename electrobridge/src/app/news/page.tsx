@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, isConfigured } from "@/lib/supabase";
 import type { NewsArticle } from "@/types";
 import NewsCard from "@/components/NewsCard";
 import SearchBar from "@/components/SearchBar";
@@ -14,6 +14,13 @@ export default function NewsPage() {
 
   const fetchNews = useCallback(async () => {
     setLoading(true);
+
+    if (!isConfigured) {
+      setArticles([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       let query = supabase
         .from("news_articles")

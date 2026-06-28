@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin, isConfigured } from "@/lib/supabase";
 import { fetchAllNews } from "@/lib/scrapers/rss-parser";
 
 export async function GET(request: NextRequest) {
+  if (!isConfigured) {
+    return NextResponse.json(
+      { error: "Database not configured." },
+      { status: 503 }
+    );
+  }
+
   try {
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: "Admin access not configured." }, { status: 503 });
+    }
+
     const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 

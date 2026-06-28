@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase, supabaseAdmin } from "@/lib/supabase";
+import { supabase, supabaseAdmin, isConfigured } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
+  if (!isConfigured) {
+    return NextResponse.json(
+      { error: "Database not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY." },
+      { status: 503 }
+    );
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
@@ -45,15 +52,11 @@ export async function GET(request: NextRequest) {
         query = query.gte("deadline", now.toISOString().split("T")[0]);
         query = query.lte("deadline", weekLater.toISOString().split("T")[0]);
       } else if (deadline === "This Month") {
-        const monthLater = new Date(
-          now.getTime() + 30 * 24 * 60 * 60 * 1000
-        );
+        const monthLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
         query = query.gte("deadline", now.toISOString().split("T")[0]);
         query = query.lte("deadline", monthLater.toISOString().split("T")[0]);
       } else if (deadline === "Later") {
-        const monthLater = new Date(
-          now.getTime() + 30 * 24 * 60 * 60 * 1000
-        );
+        const monthLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
         query = query.gt("deadline", monthLater.toISOString().split("T")[0]);
       }
     }
@@ -79,7 +82,17 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  if (!isConfigured) {
+    return NextResponse.json(
+      { error: "Database not configured." },
+      { status: 503 }
+    );
+  }
+
   try {
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: "Admin access not configured." }, { status: 503 });
+    }
     const body = await request.json();
     const { data, error } = await supabaseAdmin
       .from("opportunities")

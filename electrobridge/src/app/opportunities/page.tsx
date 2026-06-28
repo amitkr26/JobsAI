@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, isConfigured } from "@/lib/supabase";
 import type { Opportunity } from "@/types";
 import OpportunityCard from "@/components/OpportunityCard";
 import FilterBar from "@/components/FilterBar";
@@ -19,6 +19,13 @@ export default function OpportunitiesPage() {
 
   const fetchOpportunities = useCallback(async () => {
     setLoading(true);
+
+    if (!isConfigured) {
+      setOpportunities([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       const today = new Date().toISOString().split("T")[0];
 
