@@ -10,12 +10,11 @@
 | Organization | Website | What to Look For |
 |-------------|---------|-----------------|
 | ISRO URSC | ursc.gov.in/careers | JRF, Project Scientist |
-| ISRO SAC | sac.gov.in/Vyom/ui/Jobs | JRF, Research Associate |
+| ISRO SAC | sac.gov.in | JRF, Research Associate |
 | DRDO (all labs) | drdo.gov.in/careers | JRF, RA, Scientist B |
 | DRDO SSPL Delhi | sspl.drdo.gov.in | Thin film, electronics posts |
 | CSIR-NPL Delhi | nplindia.org/careers | Walk-in interviews |
 | CSIR-CEERI Pilani | ceeri.res.in | Electronics research posts |
-| CSIR-CERI | ceri.res.in | Semiconductor posts |
 | BARC Mumbai | barc.gov.in/recruitment | Research fellowships |
 | IIT Delhi IRD | ird.iitd.ac.in | Project positions |
 | IIT Bombay | ircc.iitb.ac.in | Project research posts |
@@ -31,10 +30,8 @@
 | DAAD Scholarships | daad.de/en/study-and-research-in-germany | Weekly |
 | SINGA Singapore | a-star.edu.sg/Scholarships | Monthly |
 | FindAPhD | findaphd.com (search: semiconductor, electronics) | Weekly |
-| NIMS Japan | nims.go.jp/eng/hr | Monthly |
 | MEXT Japan | studyinjapan.go.jp | Yearly (March-May) |
-| Erasmus Mundus | eacea.ec.europa.eu | Monthly |
-| Marie Curie Fellowships | ec.europa.eu/research/mariecurieactions | Monthly |
+| Marie Curie | ec.europa.eu/research/mariecurieactions | Monthly |
 
 ### Private Sector Jobs (India)
 
@@ -42,50 +39,65 @@
 |--------|----------------|
 | linkedin.com/jobs | "VLSI engineer", "embedded systems", "semiconductor" |
 | naukri.com | Electronics engineer, VLSI design, chip design |
-| indeed.co.in | Semiconductor, RF engineer, analog design |
-| iimjobs.com | Electronics, semiconductor |
 
 ---
 
 ## WEEKLY CHECKLIST (30 min)
 
-**Monday: Govt Research Check (15 min)**
+### Monday: Govt Research Check (15 min)
 - [ ] Check DRDO careers page
 - [ ] Check CSIR NPL walk-in schedule
 - [ ] Check ISRO URSC/SAC
 - [ ] Add any new positions to admin panel
 
-**Wednesday: International Opportunities (10 min)**
+### Wednesday: International Opportunities (10 min)
 - [ ] Check FindAPhD for new electronics/semiconductor PhDs
 - [ ] Check DAAD for new scholarships
 - [ ] Add relevant ones to platform
 
-**Friday: Private Sector + News Check (5 min)**
-- [ ] Quick LinkedIn search for trending electronics news
-- [ ] Check if any opportunities are expiring this week → mark as expired in admin
+### Friday: Cleanup + AI Check (5 min)
+- [ ] Check admin AI Usage tab — any provider near limit?
+- [ ] Mark expired opportunities (or run auto-expire cron)
+- [ ] Quick scan for broken links from user reports
 
 ---
 
-## HOW TO ADD AN OPPORTUNITY TO PLATFORM
+## ADMIN PANEL QUICK REFERENCE
 
-1. Platform ke admin panel par jao: `yourdomain.vercel.app/admin`
-2. Password enter karo
-3. "Add Opportunity" form fill karo:
+URL: `https://electrobridge.vercel.app/admin`
+Password: `electrobridge2026`
 
-```
-Title: [Job title exactly as posted]
-Organization: [Exact org name]
-Category: [JRF / SRF / PhD / Govt Job / Private Job / Fellowship]
-Location: [City, or "International" for abroad]
-Stipend: [₹37,000/month ya "Not specified"]
-Deadline: [YYYY-MM-DD format mein, e.g. 2026-07-11]
-Eligibility: [NET/GATE, MSc Electronics etc.]
-Description: [2-3 lines summary]
-Apply Link: [Direct URL to the job posting]
-Tags: [comma separated: JRF, thin film, Delhi, DRDO]
-```
+### Tabs
 
-4. "Save" karo — turant live ho jata hai
+1. **Dashboard** — Stats: total opportunities, active, verified, news count
+2. **Add Opportunity** — Manual entry form with "✨ AI Auto-Fill" button
+3. **AI Usage** — Provider usage chart, feature usage chart, recent log
+4. **Subscribers** — Email subscriber list with dates
+5. **Actions** — Trigger news scrape, check all links, generate weekly digest
+
+---
+
+## AI PROVIDER MONITORING
+
+AI Usage tab mein dekho:
+- **Provider bar chart** — Groq, Gemini, etc. ka usage
+- **Feature bar chart** — kaunsa feature kitna use ho raha
+- **Recent log** — last 50 AI calls with status
+
+Agar koi provider fail ho raha hai:
+1. Check ki uski API key sahi hai
+2. Providers.ts mein priority order adjust karo
+3. Naya API key le lo aur update karo
+
+---
+
+## ADDING AN OPPORTUNITY
+
+1. Admin panel → "Add Opportunity"
+2. Title, Organization, Category, Location, Stipend bharo
+3. Description mein raw text paste karo (notification se copy)
+4. **"✨ AI Auto-Fill" click karo** — AI suggested tags + cleaned title + eligibility extract karega
+5. Review karo, adjust karo, "Save" karo
 
 ---
 
@@ -102,23 +114,31 @@ Tags: [comma separated: JRF, thin film, Delhi, DRDO]
 - Weekly post: "Top 5 JRF/PhD openings this week"
 - Reddit: r/indianacademia, r/electronics mein share karo
 
-### Month 5-6: Monetization (Optional, Free to Start)
-- Google AdSense (free to join, earn per click) — electronics audience = high CPM
-- Sponsored job listings (companies pay to feature their openings)
-- Premium email alerts (paid subscribers get instant alerts, free get weekly digest)
+### Month 5-6: Monetization (Optional)
+- Google AdSense (electronics audience = high CPM ₹300-800)
+- Sponsored job listings
+- Premium email alerts
 
 ---
 
 ## PLATFORM GROWTH TARGETS
 
-| Month | Visitors/Day | Email Subscribers | Opportunities Listed |
-|-------|-------------|-------------------|---------------------|
+| Month | Visitors/Day | Email Subscribers | Opportunities |
+|-------|-------------|-------------------|---------------|
 | 1 | 50 | 20 | 50 |
 | 3 | 200 | 100 | 150 |
 | 6 | 500 | 300 | 300 |
 | 12 | 2000 | 1000 | 500+ |
 
-Yeh realistic targets hain agar tum weekly content update karte raho aur social media par share karte raho.
+---
+
+## VERCEL DEPLOY ISSUES
+
+Agar Vercel deploy BLOCKED show kare:
+- **Cause:** Hobby plan limit — ~20 rapid deploys in one session triggers block
+- **Fix:** Wait 1-2 hours for queue to clear, then deploy again
+- **Permanent fix:** Upgrade to Pro ($20/month) for instant deploys
+- **Alternative:** Deploy to [Render.com](https://render.com) (free tier, no deploy limit)
 
 ---
 
@@ -127,7 +147,7 @@ Yeh realistic targets hain agar tum weekly content update karte raho aur social 
 Tumhare paas hai:
 - Electronics + semiconductor background (authentic voice)
 - UGC-NET qualification (credibility)
-- Personal experience searching for JRF/PhD (tum exactly jaante ho kya chahiye)
-- Delhi/India perspective + international research connections knowledge
+- Personal experience searching for JRF/PhD
+- Delhi/India perspective + international research connections
 
 Yeh platform tumhari personal credibility se grow karega — tum "just a website" nahi ho, tum us community ke member ho jisko tum serve kar rahe ho.

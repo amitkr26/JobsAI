@@ -1,5 +1,26 @@
-Groq API - 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
-Huggingface API - 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
-Openrouter API - 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
-gemini API - AQ.Ab8RN6JnY3mrY50m0iT44QgetBcXli7w6Ms18jST1UWg1ZNnJA
-cloudflair API - cfut_jrWrslxMHG4zEXFgZC0megIFadRxNTEeAq1KcHjxccb4c4ea
+# API Keys — Reference (REDACTED)
+
+All API keys have been redacted from this file. Current keys are stored in:
+
+- `.env.local` (local development, gitignored)
+- Vercel Environment Variables (production)
+
+## How to Get New Keys
+
+See [02_API_KEYS_GUIDE.md](./02_API_KEYS_GUIDE.md) for detailed instructions on obtaining API keys from each provider.
+
+## Required Keys
+
+| Provider      | Env Variable               | Source                         |
+|---------------|----------------------------|--------------------------------|
+| Groq          | `GROQ_API_KEY`             | console.groq.com               |
+| Gemini        | `GEMINI_API_KEY`           | aistudio.google.com            |
+| OpenRouter    | `OPENROUTER_API_KEY`       | openrouter.ai                  |
+| HuggingFace   | `HUGGINGFACE_API_KEY`      | huggingface.co/settings/tokens |
+| Cloudflare AI | `CLOUDFLARE_AI_TOKEN`      | dash.cloudflare.com            |
+| Cloudflare    | `CLOUDFLARE_ACCOUNT_ID`    | dash.cloudflare.com (My Profile)|
+| Supabase URL  | `NEXT_PUBLIC_SUPABASE_URL` | supabase.com → Settings → API  |
+| Supabase Anon | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | supabase.com → Settings → API |
+| Supabase SR   | `SUPABASE_SERVICE_ROLE_KEY`| supabase.com → Settings → API  |
+| Admin Password| `NEXT_PUBLIC_ADMIN_PASSWORD`| Set your own                  |
+| Cron Secret   | `CRON_SECRET`              | Set your own                  |

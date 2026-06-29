@@ -1,4 +1,4 @@
-# ElectroBridge — Complete Build Prompt for Claude Code / OpenCode
+# ElectroBridge — Complete Build Prompt for OpenCode
 
 ## ROLE & GOAL
 You are a senior full-stack developer. Build a complete, production-ready web platform called **ElectroBridge** — a one-stop aggregator for the electronics and semiconductor community. The platform must aggregate job postings, JRF/PhD positions, government research jobs, technology news, and industry trends from across the web and present them in a clean, filterable dashboard.
@@ -7,68 +7,107 @@ You are a senior full-stack developer. Build a complete, production-ready web pl
 
 ## TECH STACK (ALL FREE TIER)
 - **Framework:** Next.js 14 (App Router)
-- **Database:** Supabase (PostgreSQL + Realtime + Auth)
-- **Deployment:** Vercel
-- **Styling:** Tailwind CSS
-- **Scraping/Aggregation:** Supabase Edge Functions (scheduled cron)
+- **Database:** Supabase (PostgreSQL + RLS)
+- **Deployment:** Vercel (root directory: `electrobridge/`)
+- **Styling:** Tailwind CSS (dark theme)
+- **AI:** Multi-provider fallback (Groq, Gemini, OpenRouter, Cloudflare, HuggingFace)
 - **Package manager:** npm
 
 ## COMPLETE FEATURE LIST
 
 ### 1. OPPORTUNITY AGGREGATOR
-Aggregate and display:
-- JRF / SRF positions (from CSIR, DRDO, ISRO, IITs, NITs, BARC, TIFR, IISER)
-- PhD admissions (India + international: Germany, Japan, Singapore, USA)
-- Government research jobs (Scientist B/C, Technical Officer)
-- Private sector jobs (VLSI, Embedded, Chip Design, MEMS, Photonics)
-- International fellowships (DAAD, SINGA, MEXT, Erasmus)
+- JRF / SRF / PhD / Govt Jobs / Private Sector / Fellowships / International
+- Filters: category, eligibility, location, deadline, search
+- Verification system (verified/unverified/link_unavailable/expired)
+- Auto link-checking with HTTP status tracking
+- Slug-based URLs for SEO
+- Calendar export (.ics)
 
 ### 2. TECHNOLOGY NEWS FEED
-Aggregate news from:
-- IEEE Spectrum RSS
-- Semiconductor Engineering RSS
-- EE Times RSS
-- Nature Electronics (new papers)
-- Custom keyword search results
+- 18 electronics-specific RSS sources
+- Multi-layer filter: hard blocklist → keyword whitelist → AI relevance (optional)
+- Auto-tagging with 20+ electronics tags
+- Detail pages with NewsArticle schema
 
-### 3. TRENDING TOPICS SECTION
-Show trending keywords in electronics/semiconductor space (chip shortage, 2nm process, GaN, SiC, MEMS, spintronics, etc.)
+### 3. CATEGORY PAGES (7)
+JRF, SRF, PhD, Govt Job, Fellowship, Private, International — each with:
+- SEO-optimized H1/description
+- DB-filtered opportunity grid
+- Category-specific FAQ with FAQPage schema
+- Related resource links
 
-### 4. USER FEATURES
-- Email alert subscription (notify when new JRF/PhD posts matching keywords)
-- Save/bookmark opportunities
-- Filter by: category, location, deadline, eligibility (JRF/NET/GATE)
-- Search bar
+### 4. RESOURCE GUIDES (4 + hub)
+- JRF Complete Guide (FAQPage schema, stipend table, live feed)
+- International Fellowships (DAAD/SINGA/MEXT/Marie Curie comparison)
+- VLSI Career Guide (roles/companies/salary tables)
+- NET vs GATE Comparison
 
-### 5. ADMIN PANEL
-- Add opportunities manually
-- Mark opportunities as expired
-- Manage news sources
+### 5. AI FEATURES
+- Multi-provider fallback engine (`lib/ai/providers.ts`)
+- Smart Summarizer (admin auto-fill)
+- Opportunity Matcher (`/match` page)
+- News relevance filter
+- AI Insights on detail pages
+- Smart Search (natural language → filters)
+- Weekly AI-generated newsletter digest
+- AI Chatbot (`/chat` page)
+- Auto-Expire Checker (cron endpoint)
+- Usage logging to `ai_usage_log` table
+- Admin AI Analytics tab (provider/feature charts)
 
-## DATABASE SCHEMA (Supabase)
+### 6. ORGANIZATION PAGES
+- Per-org opportunity listings
+- SEO-optimized org detail pages
 
-Create these tables in Supabase:
+### 7. USER FEATURES
+- Email alerts / weekly digest
+- Share buttons (WhatsApp, Twitter, Copy Link)
+- Report issues on opportunities
 
+### 8. ADMIN PANEL
+- Dashboard with stats
+- Add/edit/expire/manual opportunity entry
+- AI Auto-Fill button (pastes raw text → AI fills fields)
+- AI Usage analytics tab (provider bar chart, feature breakdown, recent log)
+- Subscriber list management
+- Trigger scrape / check links / generate digest actions
+
+## DATABASE SCHEMA (Supabase — use migrations)
+
+All migrations are in `supabase/migrations/`:
+
+### opportunities table
 ```sql
--- Opportunities table
 create table opportunities (
   id uuid default gen_random_uuid() primary key,
   title text not null,
   organization text not null,
-  category text not null, -- 'JRF', 'PhD', 'Govt Job', 'Private Job', 'Fellowship', 'SRF'
+  category text not null, -- 'JRF', 'SRF', 'PhD', 'Govt Job', 'Private Job', 'Fellowship'
   location text,
   stipend text,
   deadline date,
-  eligibility text, -- 'NET', 'GATE', 'PhD', 'MSc', 'BE/BTech'
+  eligibility text,
   description text,
   apply_link text,
   source_url text,
   is_active boolean default true,
   created_at timestamp with time zone default now(),
-  tags text[] -- e.g. ['VLSI', 'thin film', 'spintronics']
+  posted_at timestamp with time zone,
+  tags text[],
+  slug text unique,
+  org_slug text,
+  verification_status text default 'unverified',
+  verified_at timestamp with time zone,
+  official_page_url text,
+  apply_link_type text,
+  last_link_checked timestamp with time zone,
+  link_check_status integer,
+  admin_notes text
 );
+```
 
--- News articles table
+### news_articles table
+```sql
 create table news_articles (
   id uuid default gen_random_uuid() primary key,
   title text not null,
@@ -78,10 +117,13 @@ create table news_articles (
   published_at timestamp with time zone,
   image_url text,
   tags text[],
-  created_at timestamp with time zone default now()
+  created_at timestamp with time zone default now(),
+  slug text unique
 );
+```
 
--- Email subscribers table
+### subscribers table
+```sql
 create table subscribers (
   id uuid default gen_random_uuid() primary key,
   email text unique not null,
@@ -90,40 +132,85 @@ create table subscribers (
   created_at timestamp with time zone default now(),
   is_active boolean default true
 );
+```
 
--- Saved/bookmarked opportunities (requires auth)
-create table saved_opportunities (
+### suggestions table
+```sql
+create table suggestions (
   id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users(id),
-  opportunity_id uuid references opportunities(id),
+  type text,
+  url text,
+  notes text,
+  contact_email text,
+  submitted_at timestamp with time zone default now(),
+  is_reviewed boolean default false
+);
+-- RLS: Anyone can insert, admin can read
+```
+
+### ai_usage_log table
+```sql
+create table ai_usage_log (
+  id uuid default gen_random_uuid() primary key,
+  feature text not null,
+  provider text not null,
+  model text,
+  prompt_length integer,
+  response_length integer,
+  success boolean default true,
+  error_message text,
   created_at timestamp with time zone default now()
 );
 ```
 
-## FOLDER STRUCTURE TO CREATE
+### Additional tables
+- `saved_opportunities` (user bookmarks, needs Supabase Auth)
+- `link_check_logs` (HTTP status history)
+- `opportunity_reports` (user-submitted issue reports)
+
+## FOLDER STRUCTURE
 
 ```
 electrobridge/
 ├── app/
-│   ├── layout.tsx          # Root layout with navbar + footer
-│   ├── page.tsx            # Homepage with stats + featured opportunities
+│   ├── layout.tsx
+│   ├── page.tsx
+│   ├── globals.css
+│   ├── sitemap.ts
 │   ├── opportunities/
-│   │   ├── page.tsx        # All opportunities with filters
-│   │   └── [id]/
-│   │       └── page.tsx    # Single opportunity detail page
+│   │   ├── page.tsx
+│   │   └── [slug]/page.tsx
+│   ├── category/[category]/page.tsx
 │   ├── news/
-│   │   └── page.tsx        # News feed page
-│   ├── admin/
-│   │   └── page.tsx        # Admin panel (password protected)
+│   │   ├── page.tsx
+│   │   ├── loading.tsx
+│   │   └── [slug]/page.tsx
+│   ├── match/page.tsx
+│   ├── chat/page.tsx
+│   ├── organizations/
+│   │   ├── page.tsx
+│   │   └── [slug]/page.tsx
+│   ├── resources/
+│   │   ├── page.tsx
+│   │   ├── jrf-guide/page.tsx
+│   │   ├── international-fellowships/page.tsx
+│   │   ├── vlsi-careers/page.tsx
+│   │   └── net-vs-gate/page.tsx
+│   ├── about/page.tsx
+│   ├── contact/page.tsx
+│   ├── admin/page.tsx
 │   └── api/
-│       ├── opportunities/
-│       │   └── route.ts    # GET all, POST new opportunity
-│       ├── news/
-│       │   └── route.ts    # GET news feed
-│       ├── subscribe/
-│       │   └── route.ts    # POST email subscription
-│       └── scrape/
-│           └── route.ts    # Trigger scraping (called by cron)
+│       ├── opportunities/route.ts
+│       ├── news/route.ts
+│       ├── news/scrape/route.ts
+│       ├── ai/match/route.ts
+│       ├── ai/chat/route.ts
+│       ├── ai/search/route.ts
+│       ├── ai/opportunity-summary/[slug]/route.ts
+│       ├── ai/expire/route.ts
+│       ├── subscribe/route.ts
+│       ├── seed/route.ts
+│       └── calendar-export/[id]/route.ts
 ├── components/
 │   ├── Navbar.tsx
 │   ├── Footer.tsx
@@ -131,21 +218,28 @@ electrobridge/
 │   ├── NewsCard.tsx
 │   ├── FilterBar.tsx
 │   ├── SearchBar.tsx
-│   ├── SubscribeModal.tsx
 │   ├── CategoryBadge.tsx
-│   └── DeadlineCountdown.tsx
+│   ├── DeadlineCountdown.tsx
+│   ├── VerificationBadge.tsx
+│   ├── ApplyButton.tsx
+│   ├── ShareButtons.tsx
+│   ├── SimilarOpportunities.tsx
+│   ├── AIOpportunitySummary.tsx
+│   └── ...
 ├── lib/
-│   ├── supabase.ts         # Supabase client
-│   ├── scrapers/
-│   │   ├── rss-parser.ts   # Parse RSS feeds for news
-│   │   ├── csir-scraper.ts # Scrape CSIR opportunities
-│   │   └── isro-scraper.ts # Scrape ISRO opportunities
-│   └── utils.ts            # Helper functions
-├── types/
-│   └── index.ts            # TypeScript types
-├── public/
-│   └── logo.svg
-├── .env.local              # Environment variables
+│   ├── supabase.ts
+│   ├── utils.ts
+│   ├── ai/
+│   │   ├── providers.ts
+│   │   ├── summarizer.ts
+│   │   ├── matcher.ts
+│   │   └── ...
+│   └── scrapers/
+│       ├── news-filter.ts
+│       └── ...
+├── types/index.ts
+├── supabase/migrations/
+├── .env.local
 ├── tailwind.config.ts
 ├── next.config.ts
 └── package.json
@@ -154,306 +248,46 @@ electrobridge/
 ## ENVIRONMENT VARIABLES (.env.local)
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-ADMIN_PASSWORD=your_admin_password_here
-CRON_SECRET=your_random_secret_for_cron_auth
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_ADMIN_PASSWORD=electrobridge2026
+CRON_SECRET=mysecretcron2026
+GROQ_API_KEY=
+GEMINI_API_KEY=
+OPENROUTER_API_KEY=
+HUGGINGFACE_API_KEY=
+CLOUDFLARE_AI_TOKEN=
+CLOUDFLARE_ACCOUNT_ID=
 ```
 
-## RSS SOURCES TO AGGREGATE (in rss-parser.ts)
+## RSS SOURCES (18 sources)
 
-```typescript
-export const NEWS_SOURCES = [
-  { name: 'IEEE Spectrum', url: 'https://spectrum.ieee.org/feeds/feed.rss', tags: ['IEEE', 'electronics'] },
-  { name: 'EE Times', url: 'https://www.eetimes.com/feed/', tags: ['semiconductor', 'industry'] },
-  { name: 'Semiconductor Engineering', url: 'https://semiengineering.com/feed/', tags: ['semiconductor', 'design'] },
-  { name: 'Electronics Weekly', url: 'https://www.electronicsweekly.com/feed/', tags: ['electronics', 'news'] },
-  { name: 'The Hindu Science', url: 'https://www.thehindu.com/sci-tech/science/feeder/default.rss', tags: ['India', 'science'] },
-];
-```
+IEEE Spectrum, Semiconductor Engineering, EE Times, Electronics Weekly, Chip Design Magazine, SemiWiki, Electronics For You, AnandTech, The Register — Hardware, Nature Electronics, Science Daily — Semiconductors, Science Daily — Electronics, Phys.org — Semiconductors, Phys.org — Electronics, India Semiconductor Mission, IESA News.
 
-## OPPORTUNITY SOURCES TO MANUALLY SEED + MONITOR
+## UI DESIGN
 
-Add these as starting seed data and instruct admin to check weekly:
-- https://www.ursc.gov.in (ISRO URSC)
-- https://www.drdo.gov.in/careers
-- https://www.csir.res.in/funding
-- https://www.nplindia.org (CSIR-NPL)
-- http://www.ird.iitd.ac.in (IIT Delhi project positions)
-- https://www.findaphd.com (international PhD)
-- https://www.daad.de/en (DAAD scholarships)
+**Colors:** `#0A0F1E` navy bg, `#00D4FF` cyan accent, `#7B2FBE` purple  
+**Typography:** Space Grotesk (display), Inter (body)  
+**Dark mode only**
 
-## UI DESIGN REQUIREMENTS
+## BUILD ORDER
 
-**Color palette:**
-- Background: #0A0F1E (deep navy — space/tech feel)
-- Primary accent: #00D4FF (electric cyan)
-- Secondary accent: #7B2FBE (purple — innovation)
-- Card background: #111827
-- Text primary: #F9FAFB
-- Text muted: #6B7280
-- Success/active: #10B981
-- Warning/deadline: #F59E0B
-
-**Typography:**
-- Display: `Space Grotesk` (Google Fonts)
-- Body: `Inter`
-
-**Key UI elements:**
-- Deadline countdown badge (red when < 7 days)
-- Category color-coded badges (JRF=cyan, PhD=purple, Govt=green, Private=orange)
-- Card hover lift effect
-- Mobile-first responsive design
-- Dark mode only
-
-## HOMEPAGE SECTIONS (in order)
-
-1. **Hero:** "Your Gateway to Electronics & Semiconductor Opportunities" — with live count of active opportunities
-2. **Stats bar:** Total JRF positions | Total PhD positions | Total Govt jobs | News articles today
-3. **Latest Opportunities** (grid of 6 cards, filterable)
-4. **Latest Tech News** (horizontal scroll of news cards)
-5. **Trending Tags** (clickable tag cloud)
-6. **Subscribe section** (email alert signup)
-
-## OPPORTUNITY CARD COMPONENT
-
-Each card must show:
-- Organization logo/initials avatar
-- Title
-- Organization name
-- Category badge (color coded)
-- Location
-- Stipend (if available)
-- Eligibility tags (NET/GATE/MSc etc)
-- Deadline with countdown
-- "View Details" button → opens detail page
-- Bookmark icon (saves to localStorage for now)
-
-## FILTER BAR FEATURES
-
-Filters:
-- Category: All | JRF | SRF | PhD | Govt Job | Private Job | Fellowship
-- Eligibility: All | NET | GATE | MSc | BE/BTech | PhD
-- Location: All | Delhi | Bangalore | Mumbai | International | Remote
-- Deadline: All | This Week | This Month | Later
-- Search: free text search on title + organization + tags
-
-## ADMIN PANEL (/admin)
-
-Password protect with ADMIN_PASSWORD env variable.
-
-Features:
-- Form to add new opportunity manually
-- List all opportunities with edit/delete/mark expired buttons
-- List all subscribers
-- Trigger manual scrape button
-- View scrape logs
-
-## SEED DATA
-
-Add 10 real opportunities as seed data in a file `lib/seed-data.ts`:
-
-```typescript
-export const SEED_OPPORTUNITIES = [
-  {
-    title: "Junior Research Fellow (JRF) - THz Detector Materials",
-    organization: "ISRO URSC",
-    category: "JRF",
-    location: "Bangalore",
-    stipend: "₹37,000/month",
-    deadline: "2026-07-11",
-    eligibility: "NET/GATE, MSc Electronics/Physics",
-    description: "JRF position for characterization of THz detector materials. Ad No. URSC:02:2026, Position Code JRF-E7.",
-    apply_link: "https://www.ursc.gov.in",
-    tags: ["THz", "detector", "materials", "ISRO", "JRF"]
-  },
-  {
-    title: "Junior Research Fellow (JRF) - Thin Film Processes",
-    organization: "ISRO URSC",
-    category: "JRF",
-    location: "Bangalore",
-    stipend: "₹37,000/month",
-    deadline: "2026-07-11",
-    eligibility: "NET/GATE, MSc Electronics/Physics",
-    description: "JRF position for thin film deposition and process development. Ad No. URSC:02:2026, Position Code JRF-E1.",
-    apply_link: "https://www.ursc.gov.in",
-    tags: ["thin film", "sputtering", "ISRO", "JRF", "deposition"]
-  },
-  {
-    title: "Research Fellow - Spintronics & Magnetic Materials",
-    organization: "DRDO SSPL",
-    category: "JRF",
-    location: "Delhi",
-    stipend: "₹37,000/month",
-    deadline: "2026-08-15",
-    eligibility: "NET/GATE, MSc Physics/Electronics",
-    description: "Research position in spintronics, magnetic thin films, and magnetization dynamics.",
-    apply_link: "https://www.drdo.gov.in",
-    tags: ["spintronics", "magnetic", "DRDO", "Delhi", "thin film"]
-  },
-  {
-    title: "Project Associate - Thin Film Technology",
-    organization: "CSIR-NPL Delhi",
-    category: "JRF",
-    location: "Delhi",
-    stipend: "₹31,000/month",
-    deadline: "2026-07-30",
-    eligibility: "MSc Electronics/Physics",
-    description: "Walk-in position for thin film deposition, XRD and VSM characterization.",
-    apply_link: "https://www.nplindia.org",
-    tags: ["thin film", "XRD", "VSM", "CSIR", "Delhi", "walk-in"]
-  },
-  {
-    title: "PhD Position - CoFeB Thin Films & Spintronics",
-    organization: "TU Chemnitz",
-    category: "PhD",
-    location: "Germany",
-    stipend: "€1,500/month (DAAD funded)",
-    deadline: "2026-09-01",
-    eligibility: "MSc Electronics/Physics, Research experience in thin films",
-    description: "PhD fellowship in spintronics research group, Prof. Georgeta Salvan. DAAD funding available.",
-    apply_link: "https://www.tu-chemnitz.de",
-    tags: ["PhD", "Germany", "spintronics", "CoFeB", "DAAD", "international"]
-  },
-  {
-    title: "SINGA PhD Fellowship - Semiconductor Devices",
-    organization: "A*STAR Singapore",
-    category: "Fellowship",
-    location: "Singapore",
-    stipend: "SGD 2,000/month",
-    deadline: "2026-08-31",
-    eligibility: "MSc/BE Electronics, Strong academic record",
-    description: "Singapore International Graduate Award for PhD research in semiconductor and materials science.",
-    apply_link: "https://www.a-star.edu.sg/Scholarships/for-graduate-studies/singapore-international-graduate-award-singa",
-    tags: ["PhD", "Singapore", "SINGA", "semiconductor", "fellowship", "international"]
-  },
-  {
-    title: "Project Scientific Officer - VLSI Design",
-    organization: "IIT Delhi IRD",
-    category: "JRF",
-    location: "Delhi",
-    stipend: "₹40,000/month",
-    deadline: "2026-07-20",
-    eligibility: "BE/MTech VLSI/Electronics",
-    description: "Project position for VLSI circuit design and verification.",
-    apply_link: "http://www.ird.iitd.ac.in",
-    tags: ["VLSI", "IIT Delhi", "circuit design", "project"]
-  },
-  {
-    title: "Scientist B - Electronics & Radar",
-    organization: "DRDO LRDE",
-    category: "Govt Job",
-    location: "Bangalore",
-    stipend: "₹56,100/month (Level 10)",
-    deadline: "2026-08-01",
-    eligibility: "BE/BTech Electronics, GATE qualified",
-    description: "Permanent government scientist position in DRDO's radar research establishment.",
-    apply_link: "https://www.drdo.gov.in",
-    tags: ["DRDO", "Scientist B", "radar", "permanent job", "government"]
-  },
-  {
-    title: "MEXT Research Student Fellowship",
-    organization: "Japanese Government",
-    category: "Fellowship",
-    location: "Japan",
-    stipend: "¥143,000/month",
-    deadline: "2026-05-31",
-    eligibility: "MSc completed, Under 35 years",
-    description: "Japanese government scholarship for research in electronics and semiconductor fields at top Japanese universities.",
-    apply_link: "https://www.studyinjapan.go.jp/en/smap-stopj-applications-research.html",
-    tags: ["Japan", "MEXT", "fellowship", "international", "research"]
-  },
-  {
-    title: "Embedded Systems Engineer",
-    organization: "Texas Instruments India",
-    category: "Private Job",
-    location: "Bangalore",
-    stipend: "₹8-14 LPA",
-    deadline: "2026-07-15",
-    eligibility: "BE/MTech Electronics, C/C++ skills",
-    description: "Embedded firmware development for analog and mixed-signal ICs.",
-    apply_link: "https://careers.ti.com",
-    tags: ["embedded", "firmware", "Texas Instruments", "private", "Bangalore"]
-  }
-];
-```
-
-## PACKAGE.JSON DEPENDENCIES
-
-```json
-{
-  "dependencies": {
-    "next": "14.2.0",
-    "react": "^18",
-    "react-dom": "^18",
-    "@supabase/supabase-js": "^2.39.0",
-    "tailwindcss": "^3.4.0",
-    "autoprefixer": "^10.0.1",
-    "postcss": "^8",
-    "@tailwindcss/typography": "^0.5.10",
-    "rss-parser": "^3.13.0",
-    "date-fns": "^3.0.0",
-    "lucide-react": "^0.383.0",
-    "clsx": "^2.1.0"
-  },
-  "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18"
-  }
-}
-```
-
-## VERCEL DEPLOYMENT INSTRUCTIONS (add to README)
-
-1. Push code to GitHub repository
-2. Go to vercel.com → Import project from GitHub
-3. Add environment variables in Vercel dashboard (same as .env.local)
-4. Deploy — Vercel auto-detects Next.js
-
-## SUPABASE CRON JOB (for news auto-refresh)
-
-In Supabase dashboard → Edge Functions, create a function called `scrape-news` that:
-1. Fetches all RSS_SOURCES
-2. Parses new articles
-3. Inserts into news_articles table (skip duplicates by source_url)
-
-Schedule it with pg_cron to run every 6 hours:
-```sql
-select cron.schedule('scrape-news', '0 */6 * * *', $$
-  select net.http_post(
-    url := 'https://your-vercel-url.vercel.app/api/scrape',
-    headers := '{"Authorization": "Bearer YOUR_CRON_SECRET"}'::jsonb
-  )
-$$);
-```
-
-## BUILD ORDER FOR CLAUDE CODE
-
-Build in this exact sequence:
-1. Initialize Next.js project with TypeScript + Tailwind
-2. Install all dependencies
-3. Create Supabase client (lib/supabase.ts)
-4. Create TypeScript types (types/index.ts)
-5. Create seed data file (lib/seed-data.ts)
-6. Create RSS parser utility (lib/scrapers/rss-parser.ts)
-7. Build all API routes (app/api/)
-8. Build all reusable components (components/)
-9. Build all pages (app/)
-10. Create admin panel (app/admin/)
-11. Add seed data script and run it
-12. Test all pages locally
-13. Create README with deployment instructions
+1. Initialize Next.js with TypeScript + Tailwind
+2. Install dependencies
+3. Create Supabase client + types
+4. Build all API routes
+5. Build all components (Navbar with dropdowns, Footer, cards, etc.)
+6. Build all pages (homepage, opportunities, detail, news, category, resources, about, contact, match, chat, admin)
+7. Create seed data
+8. Test locally (`npm run dev`)
+9. Apply Supabase migrations (`npx supabase db push`)
+10. Prepare for Vercel deployment (set root to `electrobridge/`)
 
 ## IMPORTANT NOTES
-
-- Use `use client` directive only where necessary (filter bar, search, subscribe modal)
-- All data fetching in server components where possible (better SEO)
+- Use `use client` only where necessary (filters, search, interactive components)
+- Server components for SEO pages
 - Handle loading and error states on every page
-- Add meta tags for SEO on every page
-- Make sure mobile layout works perfectly (most users in India use mobile)
-- Add a "Last updated" timestamp on opportunities
-- Expired opportunities (past deadline) should be automatically hidden or marked
-- The platform should work even with 0 users — seed data should make it look populated from day 1
+- SEO meta tags + JSON-LD schema on every page
+- Mobile-first responsive design
+- All AI features gracefully degrade if API keys are missing

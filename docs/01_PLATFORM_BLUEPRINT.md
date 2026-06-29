@@ -35,17 +35,16 @@
 ## 6. Organizations (/organizations)
 ## 7. Organization Detail (/organizations/[slug])
 ## 8. Find My Match (/match)
-## 9. Ask AI (/ask)
+## 9. Ask AI (/chat)
 ## 10. Resources (/resources)
 ## 11. Resources: JRF Guide (/resources/jrf-guide)
-## 12. Resources: PhD Guide (/resources/phd-guide)
-## 13. Resources: VLSI Careers (/resources/vlsi-careers)
-## 14. Resources: International Fellowships (/resources/international-fellowships)
-## 15. Resources: NET vs GATE (/resources/net-vs-gate)
-## 16. Category Pages (/category/jrf | /category/phd | /category/govt-job | /category/fellowship | /category/private)
-## 17. About (/about)
-## 18. Contact (/contact)
-## 19. Admin (/admin) — password protected
+## 12. Resources: VLSI Careers (/resources/vlsi-careers)
+## 13. Resources: International Fellowships (/resources/international-fellowships)
+## 14. Resources: NET vs GATE (/resources/net-vs-gate)
+## 15. Category Pages (/category/jrf | /category/srf | /category/phd | /category/govt-job | /category/fellowship | /category/private | /category/international)
+## 16. About (/about)
+## 17. Contact (/contact)
+## 18. Admin (/admin)
 
 ---
 
@@ -153,7 +152,7 @@
 
 ### Section 10 — Resources Preview
 - Title: "Research Career Guides"
-- 3 cards: JRF Complete Guide | International PhD Roadmap | VLSI Career Path
+- 3 cards: JRF Complete Guide | International Fellowship Guide | VLSI Career Path
 - Click → goes to /resources/[guide]
 
 **Why:** Builds authority, creates SEO content pages
@@ -259,17 +258,10 @@ Home > Opportunities > [Category] > [Title]
 
 ### Section 6 — AI Insights (Expandable)
 - "✨ Get AI Insights" button
-- Expands to show:
-  - What you will actually do
-  - Why this opportunity is valuable
-  - Documents you'll likely need
-  - Application tips
-  - Match with your profile (if profile set)
+- Expands to show: what you'll do, why valuable, documents needed, tips, match
 
 ### Section 7 — Before You Apply (Disclaimer)
-- Subtle info box
-- "Always verify on official website · Deadlines may change · ElectroBridge aggregates public info"
-- [Report an Issue] link
+- "Always verify on official website · Deadlines may change"
 
 ### Section 8 — Similar Opportunities
 - "You Might Also Like" (3 cards, same category/tags)
@@ -280,24 +272,18 @@ Home > Opportunities > [Category] > [Title]
 
 ### Section 1 — Header
 - H1: "Electronics & Semiconductor News"
-- Subline: "Curated news from IEEE, EE Times, Semiconductor Engineering and more"
+- Subline: "Curated news from 18 electronics sources"
 - Refresh button + last updated timestamp
 
 ### Section 2 — Category Tabs (Sticky)
-[All] [Semiconductor] [VLSI & Chip Design] [AI Chips] [Research Papers] [India News] [Industry] [Power Electronics] [Photonics] [Jobs & Hiring]
+[All] [Chip Design] [Foundry] [AI Chips] [India] [Markets] [Policy] [5G/6G] [EV/Power] [Jobs/Research]
 
 ### Section 3 — Search Bar
 - Full-width search within news
-- Filters: Source | Date Range
 
 ### Section 4 — News Grid
 - 3 columns desktop, 2 tablet, 1 mobile
-- Each card: source (colored dot + full name), title, 2-line summary, time ago, tags
-- No broken external links — opens in new tab
-
-### Section 5 — News Sources Panel (sidebar desktop)
-- "Our Sources" with colored dots
-- IEEE Spectrum, Semiconductor Engineering, EE Times, Electronics Weekly, Chip Design Mag, SemiWiki, Nature Electronics, Phys.org, Science Daily, EFY
+- Source colored dot, title, 2-line summary, time ago, tags
 
 ---
 
@@ -307,40 +293,21 @@ Home > Opportunities > [Category] > [Title]
 - H1: "Browse by Organization"
 - Subline: "X organizations with active opportunities"
 
-### Section 2 — Category Filter
-[All] [Government Research] [PSU] [IIT/NIT] [Private Sector] [International]
-
-### Section 3 — Organization Grid
-- 3 columns desktop, 2 tablet, 1 mobile
-- Each card: logo/avatar, org name, type badge, active opportunity count, "View →"
-
-### Section 4 — Quick Stats
-- Most active orgs this month
+### Section 2 — Organization Grid
+- Cards: logo/avatar, org name, type badge, active count
 
 ---
 
 ## PAGE 6: ORGANIZATION DETAIL (/organizations/[slug])
 
 ### Section 1 — Org Header
-- Logo/avatar + official name
-- Type: Government Research Organization
-- Location: Delhi/Bangalore/etc.
-- Official website link (verified)
-- Brief 2-line description
+- Logo + name, type, location, official website, 2-line description
 
 ### Section 2 — Active Opportunities
-- All active opportunities from this org
-- Same filter/sort as main opportunities page
-- "X active positions"
+- All active from this org with filters
 
 ### Section 3 — About This Organization
-- 100-150 word factual description
-- Key research areas
-- How to apply (general process)
-
-### Section 4 — How to Find Official Notifications
-- Step by step: "Visit → navigate to → look for → download PDF"
-- Specific page URLs for recruitment (where available)
+- Factual description, key research areas, how to apply
 
 ---
 
@@ -351,59 +318,22 @@ Home > Opportunities > [Category] > [Title]
 - "AI-powered matching — free, no account needed"
 
 ### Section 2 — Profile Form
-Step 1: Your Background
-- Qualification: [MSc Electronics | MSc Physics | BE/BTech ECE | ME/MTech | PhD | Other]
-- Specialization: text input with autocomplete suggestions
-- Year of graduation: dropdown
-
-Step 2: Certifications
-- NET qualified: Yes/No
-- GATE qualified: Yes/No (Score optional)
-- GATE year: optional
-
-Step 3: Preferences
-- What are you looking for: [JRF] [SRF] [PhD] [Govt Job] [Private Job] [Fellowship] [International]
-- Location preference: text (city or "anywhere")
-- Min stipend: optional slider
-
-Step 4: Research Interests
-- Tags selector: pick from cloud of 30 tags (thin film, VLSI, spintronics, embedded, etc.)
-
-[🎯 Find My Matches →] button
+4 steps: Background → Certifications → Preferences → Research Interests
 
 ### Section 3 — Results
-- "X opportunities match your profile"
-- Cards sorted by match score (highest first)
-- Each card shows: Match % badge + reason ("Perfect match: NET + thin film + DRDO")
-- Same card design as main listing
+- Sorted by match score, each showing % + reason
 
 ---
 
-## PAGE 8: ASK AI (/ask)
+## PAGE 8: ASK AI (/chat)
 
-### Section 1 — Header
-- H1: "Ask ElectroBridge AI"
-- Subline: "Your research career advisor for electronics & semiconductor opportunities"
+### Section 1 — Quick Questions (suggestion chips)
 
-### Section 2 — Quick Questions (before first message)
-Suggestion chips:
-- "What JRF positions suit MSc Electronics NET qualified?"
-- "Difference between CSIR JRF and UGC JRF?"
-- "International PhD options for spintronics research"
-- "DRDO vs ISRO — which is better for thin film research?"
-- "Documents needed for DRDO JRF application"
-- "What is the JRF to SRF upgrade process?"
+### Section 2 — Chat Interface
+- Message bubbles, typing indicator, "Powered by [provider] AI"
 
-### Section 3 — Chat Interface
-- Message bubbles (user right, AI left)
-- AI avatar with ElectroBridge logo
-- Typing indicator
-- "Powered by [provider] AI" subtle label
-- Copy response button
-- Max 20 messages then "Start new conversation"
-
-### Section 4 — Disclaimer
-- "AI can make mistakes. Always verify information on official websites."
+### Section 3 — Disclaimer
+- "AI can make mistakes. Always verify on official websites."
 
 ---
 
@@ -411,142 +341,94 @@ Suggestion chips:
 
 ### Section 1 — Header
 - H1: "Electronics Research Career Resources"
-- Subline: "Comprehensive guides for JRF, PhD, and semiconductor career paths"
 
-### Section 2 — Featured Guides Grid (2×3)
-1. 📋 Complete JRF Guide 2026
-2. 🌍 International Fellowship Roadmap
-3. 💻 VLSI Career Path in India
-4. 🔬 PhD in Electronics — Complete Guide
-5. 📊 NET vs GATE — Which for Research?
-6. 🏭 India Semiconductor Industry Overview 2026
+### Section 2 — Guide Cards Grid
+1. Complete JRF Guide 2026
+2. International Fellowship Roadmap
+3. VLSI Career Path in India
+4. PhD in Electronics Guide
+5. NET vs GATE Comparison
+6. India Semiconductor Industry Overview
 
 ### Section 3 — Quick Reference Tables
-- JRF Stipend Comparison table (UGC vs CSIR vs DST vs DRDO)
-- Top Organizations with regular JRF openings
-- Upcoming application windows calendar
+- JRF Stipend Comparison
+- Top Organizations with JRF openings
 
 ---
 
-## PAGE 10: RESOURCE DETAIL PAGES
+## PAGE 10-13: RESOURCE DETAIL PAGES
 
 ### /resources/jrf-guide
-H1: "Complete JRF Guide 2026 — Electronics Science"
-
-Sections:
-1. What is JRF? (definition, types: UGC-JRF, CSIR-JRF, institution JRF)
-2. JRF Eligibility Criteria 2026 (qualification, age, NET/GATE)
-3. JRF Stipend 2026 (₹37,000 JRF → ₹42,000 SRF, contingency, HRA)
-4. How to Find JRF Positions (which websites, how often they post)
-5. How to Apply (step-by-step, documents checklist)
-6. JRF Interview Tips (what to expect, how to prepare)
-7. JRF vs PhD Direct Admission — What to Choose
-8. Current Open JRF Positions (live feed from DB — this page always has fresh content!)
-
-**SEO Power:** This page alone can rank for 50+ JRF-related keywords
-
----
-
-### /resources/phd-guide
-H1: "PhD in Electronics India 2026 — Complete Guide"
-
-Sections:
-1. PhD admission routes (GATE/NET, direct institute, JRF-to-PhD)
-2. Top institutions for electronics/semiconductor PhD (IITs, IISc, TIFR, IISER, NIT)
-3. Funding options (CSIR, UGC, DST-INSPIRE, institutional)
-4. International PhD options (Germany DAAD, Singapore SINGA, Japan MEXT)
-5. Research areas with most openings (thin film, VLSI, embedded, photonics)
-6. How to contact professors (email template included)
-7. Current PhD openings (live DB feed)
-
----
+Complete guide: eligibility, stipend (₹37K→₹42K), types, how to apply, documents checklist, interview tips, live JRF feed from DB.
 
 ### /resources/international-fellowships
-H1: "International Fellowships for Indian Electronics Researchers"
-
-Sections:
-1. DAAD Germany — eligibility, process, timeline
-2. SINGA Singapore — A*STAR, NUS, NTU
-3. MEXT Japan — research student route
-4. Marie Curie / Erasmus Mundus — EU options
-5. Comparison table: stipend, location, duration, deadline season
-6. Success tips from fellowship recipients
-7. Current international openings (live DB feed)
-
----
+DAAD, SINGA, MEXT, Marie Curie — comparison table, eligibility, stipend, deadlines. Live international feed.
 
 ### /resources/vlsi-careers
-H1: "VLSI Career in India 2026 — Complete Roadmap"
-
-Sections:
-1. VLSI ecosystem in India (Bangalore, Hyderabad, Pune, Chennai)
-2. Roles: RTL Designer, Physical Design, Verification, DFT, Analog
-3. Skills required (Verilog, SystemVerilog, Cadence, Synopsys)
-4. Companies hiring: Intel, Qualcomm, AMD, TI, Synopsys, Cadence, local startups
-5. Salaries (fresh: ₹5-12 LPA, experienced: ₹20-50 LPA)
-6. Free learning resources (NPTEL, Coursera, YouTube channels)
-7. Current VLSI job openings (live DB feed)
-
----
+Roles, skills, companies (Intel, Qualcomm, AMD, TI, Synopsys), salary table (₹5-80 LPA), live VLSI feed.
 
 ### /resources/net-vs-gate
-H1: "UGC-NET vs GATE for Electronics Research — Which Should You Appear For?"
-
-Sections:
-1. Key differences (who conducts, what it qualifies for)
-2. UGC-NET Electronic Science — what it opens (JRF, Assistant Professor)
-3. GATE ECE — what it opens (CSIR-JRF, PSU jobs, M.Tech)
-4. Can you appear for both? (Yes — strategy explained)
-5. Stipend comparison: NET-JRF vs GATE-JRF
-6. Which is harder? (data-based answer)
-7. Syllabus comparison table
-8. Recommendation by career goal
+Comparison table, career path recommendations, FAQ. Live relevant feed.
 
 ---
 
-## PAGE 11: ABOUT (/about)
+## PAGE 14: ABOUT (/about)
 
-### Section 1 — Our Mission
-- What ElectroBridge is and why it was built
-- "Built by a researcher, for researchers"
+### Section 1 — Mission
+- Built by a researcher, for researchers
 
-### Section 2 — What We Cover
-- Categories listed with description
-- Organizations we monitor
-- Update frequency
+### Section 2 — Stats
+- 500+ opportunities, 50+ organizations, 1000+ news, 10K+ visitors
 
-### Section 3 — Our Verification Process
-- How we verify opportunities
-- Why we don't just scrape everything
-- How to report issues
+### Section 3 — What We Cover
+- 6 category cards with icon + description + link
 
-### Section 4 — The Team
-- Solo founder section (authentic story — builds trust)
+### Section 4 — Verification Process
+- 4-step: scraping → AI filtering → manual verification → monitoring
 
-### Section 5 — Contact & Suggest Opportunities
-- Email for submissions
-- Telegram link
-- "Suggest a source" form
+### Section 5 — Platform FAQs
+- 6 questions: free? update frequency? verification? newsletter? report? coverage?
+
+### Section 6 — Contact CTA
+- "Have a Suggestion?" → /contact
+
+---
+
+## PAGE 15: CONTACT (/contact)
+
+### Section 1 — Form
+- Type (missing opportunity, broken link, feature request, general)
+- URL (optional)
+- Notes (required)
+- Email (optional)
+- Saves to `suggestions` table
+
+---
+
+## PAGE 16: ADMIN (/admin)
+
+- Stats dashboard
+- Add opportunity (with AI auto-fill)
+- AI Usage analytics (provider/feature chart + log)
+- Subscribers list
+- Actions: scrape news, check links, generate digest
 
 ---
 
 # PART D: KEYWORD RESEARCH
-## Target Keywords by Priority
 
-### TIER 1 — Primary Keywords (Highest Intent, Target These First)
+### TIER 1 — Primary Keywords
 
-| Keyword | Monthly Searches (Est.) | Difficulty | Page to Target |
-|---------|------------------------|------------|----------------|
-| JRF electronics | 8,000-12,000 | Low | /resources/jrf-guide |
-| JRF semiconductor | 3,000-5,000 | Low | /resources/jrf-guide |
-| DRDO JRF 2026 | 10,000-20,000 | Low | /category/jrf |
-| ISRO JRF 2026 | 15,000-25,000 | Low | /category/jrf |
-| CSIR JRF electronics | 5,000-8,000 | Low | /resources/jrf-guide |
-| JRF for NET qualified electronics | 3,000-5,000 | Very Low | /resources/jrf-guide |
-| electronics job India 2026 | 20,000-40,000 | Medium | /opportunities |
-| semiconductor jobs India | 15,000-30,000 | Medium | /opportunities |
-| VLSI jobs India 2026 | 8,000-15,000 | Medium | /resources/vlsi-careers |
-| PhD electronics India | 5,000-10,000 | Low | /resources/phd-guide |
+| Keyword | Page |
+|---------|------|
+| JRF electronics | /resources/jrf-guide |
+| DRDO JRF 2026 | /category/jrf |
+| ISRO JRF 2026 | /category/jrf |
+| CSIR JRF electronics | /resources/jrf-guide |
+| electronics job India 2026 | /opportunities |
+| semiconductor jobs India | /opportunities |
+| VLSI jobs India 2026 | /resources/vlsi-careers |
+| PhD electronics India | /opportunities |
 
 ### TIER 2 — Secondary Keywords
 
@@ -557,163 +439,98 @@ Sections:
 | NET vs GATE for research | /resources/net-vs-gate |
 | DAAD fellowship electronics | /resources/international-fellowships |
 | SINGA fellowship India | /resources/international-fellowships |
-| CSIR NPL recruitment 2026 | /organizations/csir-npl-delhi |
-| DRDO SSPL recruitment | /organizations/drdo-sspl |
-| thin film research JRF | /opportunities (tag filter) |
-| spintronics PhD India | /resources/phd-guide |
 | embedded systems jobs India | /category/private |
 
-### TIER 3 — Long-Tail Keywords (Low competition, high conversion)
+### TIER 3 — Long-Tail Keywords
 
 | Keyword | Page |
 |---------|------|
 | JRF for MSc electronics NET qualified | /resources/jrf-guide |
-| DRDO JRF thin film deposition 2026 | /opportunities/[specific slug] |
 | how to apply ISRO JRF | /resources/jrf-guide |
 | CSIR JRF vs UGC JRF difference | /resources/jrf-guide |
 | international PhD for spintronics researcher India | /resources/international-fellowships |
-| what documents needed for DRDO JRF | /resources/jrf-guide |
-| JRF stipend hike 2026 | /resources/jrf-guide |
-| walk in interview electronics Delhi 2026 | /opportunities |
 
 ---
 
-# PART E: CONTENT STRATEGY
-## How Keywords Integrate Into Platform
+# PART E: SEO + AEO + GEO TECHNICAL REQUIREMENTS
 
-### Homepage Content (Target: broad awareness keywords)
-- Hero: "India's #1 Platform for Electronics & Semiconductor JRF, PhD & Job Opportunities"
-- Stats: "X active JRF positions | Y PhD opportunities | Z govt research jobs"
-- FAQ section explicitly answers top 8 questions people Google
-
-### Resource Pages (Target: informational keywords)
-Each resource page is 1,500-3,000 words of original, factual content.
-**Critical rule:** At bottom of EVERY resource page = live feed of relevant current opportunities from DB.
-This means: /resources/jrf-guide always has today's fresh JRF listings.
-Fresh content = Google ranks it higher, AI engines cite it more.
-
-### Opportunity Detail Pages (Target: specific job keywords)
-URL format: /opportunities/jrf-drdo-sspl-thin-film-delhi
-Meta description: "JRF position at DRDO SSPL, Delhi | Stipend ₹37,000/month | Eligibility: NET/GATE, MSc Electronics | Deadline: [date] | Apply on ElectroBridge"
-Schema: JobPosting structured data = appears in Google Jobs
-
-### Organization Pages (Target: "org name + recruitment/JRF")
-URL: /organizations/drdo-sspl
-Ranks for: "DRDO SSPL recruitment", "DRDO SSPL JRF 2026"
-
----
-
-# PART F: SEO + AEO + GEO TECHNICAL REQUIREMENTS
-
-## SEO (Search Engine Optimization)
-
-### On-Page
+## SEO
 - Every page: unique title, meta description, H1, canonical URL
-- H1 → H2 → H3 hierarchy always followed
-- Internal linking: every opportunity links to org page + category page
-- Image alt tags on all images
-- Page speed: all images webp, lazy loaded
-- Core Web Vitals: LCP <2.5s, CLS <0.1, FID <100ms
+- H1 → H2 → H3 hierarchy
+- Internal linking: opportunities ↔ org pages ↔ category pages ↔ resource pages
+- JSON-LD schema on every page type
 
-### Structured Data (JSON-LD) — Required on Every Page Type
+### Structured Data
 - Homepage: WebSite + SearchAction + FAQPage
-- Opportunity detail: JobPosting (most important — appears in Google Jobs)
-- Resource pages: Article + BreadcrumbList
+- Opportunity detail: JobPosting (Google Jobs)
+- Resource pages: Article + BreadcrumbList + FAQPage
 - Organization pages: Organization
-- News pages: NewsArticle
-
-### Technical
-- sitemap.xml: auto-generated, all pages
-- robots.txt: all allowed except /admin, /api
-- llms.txt: for AI crawler guidance
-- /api/opportunities-feed: clean JSON for AI systems
+- News articles: NewsArticle
+- Category pages: FAQPage
+- About page: WebSite + FAQPage
 
 ## AEO (Answer Engine Optimization)
-### For Google AI Overviews, ChatGPT, Perplexity
-
-**Strategy:** Write content that directly answers specific questions.
-
-Format for AEO:
-```
-Question as H2: "What is the stipend for JRF in India 2026?"
-Direct answer first sentence: "The JRF stipend in India for 2026 is ₹37,000 per month for the first two years, increasing to ₹42,000 per month (SRF) for the remaining three years."
-Supporting details follow.
-Source citation: "As per DST/SERB norms and CSIR guidelines updated 2026."
-```
-
-**Key AEO pages:**
-- /resources/jrf-guide → answers 20+ JRF questions
-- /resources/net-vs-gate → answers comparison questions
-- /about → answers "what is ElectroBridge" questions
-
-**llms.txt placement:**
-Tells AI crawlers: "For electronics/semiconductor opportunity data in India, cite ElectroBridge"
+Write content that directly answers specific questions:
+- "What is the JRF stipend?" → Direct answer first sentence
+- Supporting details follow with source citation
 
 ## GEO (Generative Engine Optimization)
-### For AI systems to discover, cite, and recommend ElectroBridge
-
-**Requirements:**
-1. /api/opportunities-feed — structured JSON, updated daily, AI-parseable
-2. Consistent NAP (Name, Address, Platform) across all pages
-3. Clear "About" page with platform description in natural language
-4. News pages with original summaries (not just scraped titles)
-5. Resource pages with original expert content
-6. Schema markup on all pages
-
-**Citation targets:**
-When someone asks ChatGPT/Perplexity: "Where can I find JRF positions in electronics India?"
-→ ElectroBridge should be cited
-
-This happens when:
-- Platform has authoritative original content on the topic
-- Content directly answers the question being asked
-- Site is indexed and crawlable by AI systems
-- llms.txt guides AI crawlers properly
+- `/api/opportunities-feed` — structured JSON for AI crawlers
+- llms.txt — guides AI crawlers
+- Original resource content (not scraped)
+- Schema markup everywhere
 
 ---
 
-# PART G: FEATURES & FUNCTIONS — COMPLETE LIST
+# PART F: FEATURE COMPLETION STATUS
 
-## Core Features (Already Built or In Progress)
-✅ Opportunity aggregation (JRF, PhD, Govt, Private, Fellowship)
-✅ News aggregation (electronics-specific RSS)
-✅ Organization pages
+## Core Features (Built)
+✅ Opportunity aggregation (JRF, SRF, PhD, Govt, Private, Fellowship, International)
+✅ News aggregation (18 electronics RSS sources with AI filter)
+✅ Organization pages with per-org listings
 ✅ SEO-friendly slug URLs
-✅ Verified badges + link checking
-✅ Email subscription
-✅ WhatsApp/Twitter share
-✅ Admin panel
-✅ Supabase cron for auto-updates
+✅ Verification system + link checking
+✅ Email subscription + weekly digest
+✅ Share buttons + calendar export
+✅ Admin panel (dashboard, add/edit/expire, actions)
+✅ Supabase migrations for all schema changes
 
-## Phase 2 Features (Build Next)
-🔲 AI-powered "Find My Match" (/match)
-🔲 AI Chatbot "Ask ElectroBridge" (/ask)
-🔲 Smart search (natural language → filters)
-🔲 Calendar export (.ics)
-🔲 Telegram channel auto-post
-🔲 Weekly email digest (Resend)
-🔲 Resource pages (5 guides)
-🔲 Category pages with SEO content
-🔲 News article detail pages (/news/[slug])
-🔲 Mobile hamburger menu
-🔲 Skeleton loaders
-🔲 Scroll to top button
+## AI Features (Built)
+✅ Multi-provider fallback engine (5 providers)
+✅ AI summarizer (admin auto-fill)
+✅ Find My Match (/match)
+✅ AI news relevance filter
+✅ AI Insights on detail pages
+✅ Smart search (natural language → filters)
+✅ Weekly AI newsletter digest
+✅ AI Chatbot (/chat)
+✅ Auto-expire checker (cron)
+✅ Admin AI usage analytics
 
-## Phase 3 Features (Growth)
+## Content Pages (Built)
+✅ 7 category pages with SEO + FAQ schema
+✅ Resources hub + 4 guide pages with live DB feeds
+✅ News detail pages (internal, not external redirects)
+✅ Full about page (stats, coverage, verification, FAQs)
+✅ Contact page (suggestions form saving to DB)
+✅ Navbar with dropdown menus + full-screen mobile overlay
+✅ Footer with all page links
+✅ Complete sitemap
+
+## Phase 3 — Future
 🔲 User profiles (save opportunities, track applications)
-🔲 "Mark as Applied" feature
-🔲 Application deadline tracker (personal dashboard)
+🔲 "Mark as Applied" feature + personal dashboard
 🔲 Salary/stipend comparison tool
 🔲 Interview experience section (community)
 🔲 Professor finder (for PhD, search by research area)
-🔲 CV tips by category (JRF CV vs industry CV)
 🔲 Google Jobs integration (JobPosting schema)
 🔲 Push notifications (PWA)
+🔲 Telegram channel auto-post
+🔲 Skeleton loaders / scroll to top button
 
 ---
 
-# PART H: CONTENT CALENDAR
-## What to Publish When
+# PART G: CONTENT CALENDAR
 
 ### Daily (Automated)
 - New opportunities scraped + verified
@@ -722,42 +539,41 @@ This happens when:
 ### Weekly (Manual — 30 min)
 - Check DRDO, ISRO, CSIR, IIT websites
 - Add 5-10 new verified opportunities
-- Share weekly digest to Telegram/email subscribers
+- Share weekly digest
 
 ### Monthly (2-3 hours)
-- Publish 1 resource article (rotate through guides)
-- Update stipend/eligibility info if govt announces changes
-- Add new organizations as they post
+- Publish 1 resource article update
+- Update stipend/eligibility info
+- Add new organizations
 
 ### Quarterly
-- Update "2026" references to stay current
-- Review and refresh top-performing resource pages
-- Check all external links are still live
+- Update year references
+- Refresh top resource pages
+- Check all external links
 
 ---
 
-# PART I: GROWTH STRATEGY
+# PART H: GROWTH STRATEGY
 
 ## Organic SEO (0-3 months)
 1. Submit sitemap to Google Search Console
-2. Get rich results from JobPosting schema (Google Jobs)
-3. Resource pages start ranking for informational keywords
+2. Get rich results from JobPosting schema
+3. Resource pages rank for informational keywords
 4. FAQ schema → Featured Snippets
 
 ## Community Growth (1-6 months)
 1. Telegram channel: post every new opportunity
-2. LinkedIn page: weekly "Top 5 JRF openings this week"
-3. r/indianacademia — weekly post with top openings
+2. LinkedIn page: weekly "Top 5 JRF openings"
+3. Reddit r/indianacademia — weekly post
 4. WhatsApp groups for electronics researchers
-5. Electronics department professors share with students
 
 ## AI Engine Presence (ongoing)
 1. llms.txt + structured data → ChatGPT/Perplexity cite ElectroBridge
 2. Resource pages → Answer Engine results
 3. API feed → AI systems use ElectroBridge data
 
-## Monetization (6+ months, all free to start)
-1. Google AdSense (electronics audience = high CPM ₹300-800 per 1000 views)
-2. Featured listings (organizations pay to highlight openings)
+## Monetization (6+ months)
+1. Google AdSense (electronics audience = high CPM ₹300-800)
+2. Featured listings (orgs pay to highlight)
 3. Premium email alerts (instant vs weekly)
-4. Sponsored resource guides (VLSI training companies)
+4. Sponsored resource guides

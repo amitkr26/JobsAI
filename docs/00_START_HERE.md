@@ -3,16 +3,19 @@
 ## Platform Overview
 **Name:** ElectroBridge  
 **Purpose:** Electronics & Semiconductor job/opportunity aggregator for Indian researchers  
-**Stack:** Next.js + Supabase + Vercel (100% FREE)
+**Stack:** Next.js + Supabase + Vercel (100% FREE)  
+**URL:** https://electrobridge.vercel.app  
 
 ---
 
-## Document Order (Kya Pehle Padho)
+## Document Order
 
-1. **02_SETUP_GUIDE.md** → Accounts banao (GitHub, Supabase, Vercel)
-2. **03_OPENCODE_PROMPTS.md** → OpenCode mein kaise prompt karo
-3. **01_MASTER_PROMPT.md** → Yeh OpenCode mein paste karo (platform build hoga)
-4. **04_WEEKLY_MAINTENANCE.md** → Launch ke baad weekly kya karna hai
+1. **[02_SETUP_GUIDE.md](./02_SETUP_GUIDE.md)** → Accounts banao (GitHub, Supabase, Vercel)
+2. **[03_OPENCODE_PROMPTS.md](./03_OPENCODE_PROMPTS.md)** → OpenCode mein kaise prompt karo
+3. **[01_MASTER_PROMPT.md](./01_MASTER_PROMPT.md)** → Yeh OpenCode mein paste karo (platform build hoga)
+4. **[01_PLATFORM_BLUEPRINT.md](./01_PLATFORM_BLUEPRINT.md)** → Pura platform architecture + SEO strategy
+5. **[02_API_KEYS_GUIDE.md](./02_API_KEYS_GUIDE.md)** → AI API keys kaise lein
+6. **[04_WEEKLY_MAINTENANCE.md](./04_WEEKLY_MAINTENANCE.md)** → Launch ke baad weekly kya karna hai
 
 ---
 
@@ -22,7 +25,9 @@
 |---------|---------|------------|
 | GitHub | Code storage | Unlimited |
 | Supabase | Database | 500MB, 50k rows |
-| Vercel | Hosting | 100GB/month |
+| Vercel | Hosting | 100GB bandwidth/month |
+| Groq | AI (primary) | 14,400 req/day |
+| Gemini | AI (backup) | 1,500 req/day |
 | Google Fonts | Typography | Free |
 | RSS Feeds | News aggregation | Free |
 
@@ -30,31 +35,65 @@
 
 ---
 
-## Key URLs (After Deployment)
+## Key URLs
 
 | Page | URL |
 |------|-----|
-| Homepage | yourdomain.vercel.app |
-| All Opportunities | yourdomain.vercel.app/opportunities |
-| News Feed | yourdomain.vercel.app/news |
-| Admin Panel | yourdomain.vercel.app/admin |
-| API - Opportunities | yourdomain.vercel.app/api/opportunities |
-| API - News | yourdomain.vercel.app/api/news |
+| Homepage | electrobridge.vercel.app |
+| All Opportunities | /opportunities |
+| Category: JRF | /category/jrf |
+| Category: PhD | /category/phd |
+| Category: Govt Jobs | /category/govt-job |
+| Category: International | /category/international |
+| Tech News | /news |
+| News Detail | /news/[slug] |
+| Find My Match | /match |
+| Ask AI | /chat |
+| Resources Hub | /resources |
+| JRF Complete Guide | /resources/jrf-guide |
+| International Fellowships | /resources/international-fellowships |
+| VLSI Career Guide | /resources/vlsi-careers |
+| NET vs GATE Guide | /resources/net-vs-gate |
+| Organizations | /organizations |
+| About | /about |
+| Contact | /contact |
+| Admin Panel | /admin |
 
 ---
 
-## Platform Features at Launch
+## Platform Features
 
-✅ Opportunities listing (JRF, PhD, Govt Job, Private, Fellowship)  
-✅ Filters (category, location, eligibility, deadline)  
-✅ Search bar  
-✅ News feed (auto-updated from RSS every 6 hours)  
-✅ Trending tags  
+### Core
+✅ Opportunities listing (JRF, SRF, PhD, Govt Job, Private, Fellowship, International)  
+✅ Filters (category, location, eligibility, deadline, search)  
+✅ News feed (auto-updated from 18 RSS sources)  
+✅ Organization pages with per-org listings  
+✅ Verification system (verified/unverified/expired badges)  
+✅ Link checking automation  
 ✅ Email subscription  
-✅ Admin panel  
-✅ 10 seed opportunities pre-loaded  
+✅ Admin panel with dashboard + AI analytics  
+✅ Seed data (10+ real opportunities)  
 ✅ Mobile responsive  
 ✅ Dark mode design  
+
+### AI Features
+✅ Multi-provider fallback engine (Groq → Gemini → OpenRouter → Cloudflare → HuggingFace)  
+✅ AI Opportunity Summarizer (admin auto-fill)  
+✅ Find My Match (profile → matched opportunities)  
+✅ AI News Relevance Filter  
+✅ AI Insights on opportunity detail pages  
+✅ Smart Search (natural language → structured filters)  
+✅ AI Chatbot (Ask ElectroBridge at /chat)  
+✅ Auto-Expire Checker (cron endpoint)  
+✅ Weekly AI-generated newsletter digest  
+
+### Content Pages
+✅ 7 Category pages with SEO content + FAQ schema  
+✅ Resources hub + 4 guide pages with live DB feeds  
+✅ News detail pages with NewsArticle schema  
+✅ About page with mission, stats, coverage, verification  
+✅ Contact page with suggestions form  
+✅ Full sitemap with all pages  
 
 ---
 
