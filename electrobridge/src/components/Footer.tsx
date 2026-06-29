@@ -13,34 +13,61 @@ export default function Footer() {
                 Electro<span className="text-cyan">Bridge</span>
               </span>
             </Link>
-            <p className="text-text-muted text-sm leading-relaxed">
+            <p className="text-text-muted text-sm leading-relaxed mb-4">
               Your gateway to electronics &amp; semiconductor opportunities in India and globally.
             </p>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-1 text-cyan text-xs font-medium hover:underline"
+            >
+              Have a suggestion? Let us know →
+            </Link>
           </div>
           <div>
-            <h4 className="font-display text-sm font-semibold text-text-primary mb-4">Quick Links</h4>
+            <h4 className="font-display text-sm font-semibold text-text-primary mb-4">Opportunities</h4>
             <div className="flex flex-col gap-2.5">
+              <Link href="/category/jrf" className="text-text-muted hover:text-cyan transition-colors text-sm">JRF Positions</Link>
+              <Link href="/category/srf" className="text-text-muted hover:text-cyan transition-colors text-sm">SRF Positions</Link>
+              <Link href="/category/phd" className="text-text-muted hover:text-cyan transition-colors text-sm">PhD Opportunities</Link>
+              <Link href="/category/govt-job" className="text-text-muted hover:text-cyan transition-colors text-sm">Government Jobs</Link>
+              <Link href="/category/fellowship" className="text-text-muted hover:text-cyan transition-colors text-sm">Fellowships</Link>
+              <Link href="/category/private" className="text-text-muted hover:text-cyan transition-colors text-sm">Private Sector</Link>
+              <Link href="/category/international" className="text-text-muted hover:text-cyan transition-colors text-sm">International</Link>
               <Link href="/opportunities" className="text-text-muted hover:text-cyan transition-colors text-sm">All Opportunities</Link>
-              <Link href="/news" className="text-text-muted hover:text-cyan transition-colors text-sm">Tech News</Link>
-              <Link href="/organizations" className="text-text-muted hover:text-cyan transition-colors text-sm">Organizations</Link>
-              <Link href="/about" className="text-text-muted hover:text-cyan transition-colors text-sm">About</Link>
-            </div>
-          </div>
-          <div>
-            <h4 className="font-display text-sm font-semibold text-text-primary mb-4">Categories</h4>
-            <div className="flex flex-col gap-2.5">
-              <Link href="/opportunities?category=JRF" className="text-text-muted hover:text-cyan transition-colors text-sm">JRF / SRF Positions</Link>
-              <Link href="/opportunities?category=PhD" className="text-text-muted hover:text-cyan transition-colors text-sm">PhD Opportunities</Link>
-              <Link href="/opportunities?category=Govt+Job" className="text-text-muted hover:text-cyan transition-colors text-sm">Govt Jobs</Link>
-              <Link href="/opportunities?category=Private+Job" className="text-text-muted hover:text-cyan transition-colors text-sm">Private Sector</Link>
             </div>
           </div>
           <div>
             <h4 className="font-display text-sm font-semibold text-text-primary mb-4">Resources</h4>
             <div className="flex flex-col gap-2.5">
-              <Link href="/resources" className="text-text-muted hover:text-cyan transition-colors text-sm">JRF Guide</Link>
-              <Link href="/resources" className="text-text-muted hover:text-cyan transition-colors text-sm">Research Resources</Link>
+              <Link href="/resources/jrf-guide" className="text-text-muted hover:text-cyan transition-colors text-sm">JRF Complete Guide</Link>
+              <Link href="/resources/international-fellowships" className="text-text-muted hover:text-cyan transition-colors text-sm">International Fellowships</Link>
+              <Link href="/resources/vlsi-careers" className="text-text-muted hover:text-cyan transition-colors text-sm">VLSI Career Guide</Link>
+              <Link href="/resources/net-vs-gate" className="text-text-muted hover:text-cyan transition-colors text-sm">NET vs GATE Guide</Link>
+              <Link href="/resources" className="text-text-muted hover:text-cyan transition-colors text-sm">All Resources</Link>
+              <Link href="/news" className="text-text-muted hover:text-cyan transition-colors text-sm">Tech News</Link>
+              <Link href="/organizations" className="text-text-muted hover:text-cyan transition-colors text-sm">Organizations</Link>
+            </div>
+          </div>
+          <div>
+            <h4 className="font-display text-sm font-semibold text-text-primary mb-4">Connect</h4>
+            <div className="flex flex-col gap-2.5">
+              <Link href="/about" className="text-text-muted hover:text-cyan transition-colors text-sm">About</Link>
+              <Link href="/contact" className="text-text-muted hover:text-cyan transition-colors text-sm">Contact & Suggestions</Link>
+              <Link href="/match" className="text-text-muted hover:text-cyan transition-colors text-sm">Find My Match</Link>
+              <Link href="/chat" className="text-text-muted hover:text-cyan transition-colors text-sm">Ask AI</Link>
               <Link href="/opportunities-feed" className="text-text-muted hover:text-cyan transition-colors text-sm" target="_blank">JSON Feed</Link>
+            </div>
+            <div className="mt-6">
+              <h4 className="font-display text-sm font-semibold text-text-primary mb-3">Newsletter</h4>
+              <p className="text-text-muted text-xs mb-3">
+                Get weekly updates on new opportunities.
+              </p>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-1 bg-cyan text-navy font-semibold rounded-lg px-4 py-2 text-xs hover:bg-cyan/90 transition-colors"
+              >
+                Subscribe
+              </Link>
             </div>
           </div>
         </div>

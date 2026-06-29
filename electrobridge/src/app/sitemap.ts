@@ -1,17 +1,57 @@
 import { MetadataRoute } from "next";
 import { supabaseAdmin } from "@/lib/supabase";
 
+const STATIC_PAGES: { url: string; freq: "daily" | "hourly" | "weekly" | "monthly"; priority: number }[] = [
+  { url: "https://electrobridge.vercel.app", freq: "daily", priority: 1 },
+  { url: "https://electrobridge.vercel.app/opportunities", freq: "daily", priority: 0.9 },
+  { url: "https://electrobridge.vercel.app/news", freq: "hourly", priority: 0.8 },
+  { url: "https://electrobridge.vercel.app/organizations", freq: "weekly", priority: 0.7 },
+  { url: "https://electrobridge.vercel.app/about", freq: "monthly", priority: 0.5 },
+  { url: "https://electrobridge.vercel.app/resources", freq: "monthly", priority: 0.5 },
+  { url: "https://electrobridge.vercel.app/contact", freq: "monthly", priority: 0.3 },
+  { url: "https://electrobridge.vercel.app/match", freq: "monthly", priority: 0.4 },
+  { url: "https://electrobridge.vercel.app/chat", freq: "monthly", priority: 0.4 },
+];
+
+const CATEGORY_PAGES = ["jrf", "srf", "phd", "govt-job", "fellowship", "private", "international"];
+
+const RESOURCE_PAGES = [
+  "jrf-guide",
+  "international-fellowships",
+  "vlsi-careers",
+  "net-vs-gate",
+];
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const urls: MetadataRoute.Sitemap = [
-    { url: "https://electrobridge.vercel.app", lastModified: new Date(), changeFrequency: "daily" as const, priority: 1 },
-    { url: "https://electrobridge.vercel.app/opportunities", lastModified: new Date(), changeFrequency: "daily" as const, priority: 0.9 },
-    { url: "https://electrobridge.vercel.app/news", lastModified: new Date(), changeFrequency: "hourly" as const, priority: 0.8 },
-    { url: "https://electrobridge.vercel.app/organizations", lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.7 },
-    { url: "https://electrobridge.vercel.app/about", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
-    { url: "https://electrobridge.vercel.app/resources", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
-  ];
+  const urls: MetadataRoute.Sitemap = STATIC_PAGES.map((p) => ({
+    url: p.url,
+    lastModified: new Date(),
+    changeFrequency: p.freq,
+    priority: p.priority,
+  }));
+
+  // Category pages
+  for (const cat of CATEGORY_PAGES) {
+    urls.push({
+      url: `https://electrobridge.vercel.app/category/${cat}`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.7,
+    });
+  }
+
+  // Resource pages
+  for (const res of RESOURCE_PAGES) {
+    urls.push({
+      url: `https://electrobridge.vercel.app/resources/${res}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.6,
+    });
+  }
 
   if (supabaseAdmin?.from) {
+    // Opportunity detail pages
     const { data: opportunities } = await supabaseAdmin
       .from("opportunities")
       .select("slug, created_at")
@@ -29,6 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     }
 
+    // Organization pages
     const { data: orgs } = await supabaseAdmin
       .from("opportunities")
       .select("org_slug")
@@ -44,6 +85,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           lastModified: new Date(),
           changeFrequency: "weekly" as const,
           priority: 0.6,
+        });
+      }
+    }
+
+    // News article pages (by slug)
+    const { data: news } = await supabaseAdmin
+      .from("news_articles")
+      .select("slug, published_at")
+      .not("slug", "is", null)
+      .limit(200);
+
+    if (news) {
+      for (const article of news as Array<{ slug: string; published_at?: string }>) {
+        urls.push({
+          url: `https://electrobridge.vercel.app/news/${article.slug}`,
+          lastModified: new Date(article.published_at || Date.now()),
+          changeFrequency: "monthly" as const,
+          priority: 0.5,
         });
       }
     }
