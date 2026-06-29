@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin, isAdminConfigured } from "@/lib/supabase";
 
 const STATIC_PAGES: { url: string; freq: "daily" | "hourly" | "weekly" | "monthly"; priority: number }[] = [
   { url: "https://electrobridge.vercel.app", freq: "daily", priority: 1 },
@@ -50,7 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
-  if (supabaseAdmin?.from) {
+  if (isAdminConfigured && supabaseAdmin?.from) {
     // Opportunity detail pages
     const { data: opportunities } = await supabaseAdmin
       .from("opportunities")

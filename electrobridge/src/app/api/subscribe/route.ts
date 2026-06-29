@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase, isConfigured } from "@/lib/supabase";
+import { checkRateLimit } from "@/lib/rate-limiter";
 
 export async function POST(request: NextRequest) {
   if (!isConfigured) {
     return NextResponse.json(
       { error: "Database not configured." },
       { status: 503 }
+    );
+  }
+
+  const ip = request.headers.get("x-forwarded-for") || "unknown";
+  const { allowed, remaining } = checkRateLimit(ip, 3, 60 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Try again later." },
+      { status: 429 }
     );
   }
 
@@ -30,7 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("subscribers")
       .insert([
         {

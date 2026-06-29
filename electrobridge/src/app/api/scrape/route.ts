@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin, isAdminConfigured } from "@/lib/supabase";
 import { fetchAllNews, fetchOpportunitiesFromRSS } from "@/lib/scrapers/rss-parser";
 import { scrapeAllOpportunities } from "@/lib/scrapers/opportunity-scraper";
-import { cleanTitle } from "@/lib/scrapers/utils";
+import { cleanTitle, slugify } from "@/lib/scrapers/utils";
 import { isElectronicsNews, autoTagArticle } from "@/lib/scrapers/news-filter";
 
 export async function GET(request: NextRequest) {
@@ -40,23 +40,41 @@ export async function GET(request: NextRequest) {
           continue;
         }
 
+        if (!article.source_url) {
+          newsSkipped++;
+          continue;
+        }
+
+        const { data: existing } = await supabaseAdmin
+          .from("news_articles")
+          .select("id")
+          .eq("source_url", article.source_url)
+          .maybeSingle();
+
+        if (existing) {
+          newsSkipped++;
+          continue;
+        }
+
+        const tags = article.tags.length > 0
+          ? article.tags
+          : autoTagArticle(article.title, article.summary || "");
+
+        let slug = slugify(article.title);
+        if (!slug) slug = `news-${Date.now()}`;
+
         const { error } = await supabaseAdmin
           .from("news_articles")
-          .upsert(
-            [{
-              title: article.title,
-              summary: article.summary,
-              source: article.source,
-              source_url: article.source_url,
-              published_at: article.published_at,
-              image_url: article.image_url,
-              tags: article.tags.length > 0
-                ? article.tags
-                : autoTagArticle(article.title, article.summary || ""),
-            }],
-            { onConflict: "source_url", ignoreDuplicates: false }
-          )
-          .select();
+          .insert([{
+            title: article.title,
+            slug,
+            summary: article.summary,
+            source: article.source,
+            source_url: article.source_url,
+            published_at: article.published_at,
+            image_url: article.image_url,
+            tags,
+          }]);
 
         if (!error) newsInserted++;
         else newsSkipped++;
@@ -83,28 +101,35 @@ export async function GET(request: NextRequest) {
         }
         const cleanedTitle = cleanTitle(opp.title, opp.organization);
 
+        const { data: existing } = await supabaseAdmin
+          .from("opportunities")
+          .select("id")
+          .eq("source_url", opp.source_url)
+          .maybeSingle();
+
+        if (existing) {
+          oppSkipped++;
+          continue;
+        }
+
         const { error } = await supabaseAdmin
           .from("opportunities")
-          .upsert(
-            [
-              {
-                title: cleanedTitle,
-                organization: opp.organization,
-                category: opp.category,
-                location: opp.location,
-                stipend: opp.stipend,
-                deadline: opp.deadline,
-                eligibility: opp.eligibility,
-                description: opp.description,
-                apply_link: opp.apply_link,
-                source_url: opp.source_url,
-                tags: opp.tags,
-                is_active: true,
-              },
-            ],
-            { onConflict: "source_url", ignoreDuplicates: false }
-          )
-          .select();
+          .insert([
+            {
+              title: cleanedTitle,
+              organization: opp.organization,
+              category: opp.category,
+              location: opp.location,
+              stipend: opp.stipend,
+              deadline: opp.deadline,
+              eligibility: opp.eligibility,
+              description: opp.description,
+              apply_link: opp.apply_link,
+              source_url: opp.source_url,
+              tags: opp.tags,
+              is_active: true,
+            },
+          ]);
 
         if (!error) oppInserted++;
         else oppSkipped++;

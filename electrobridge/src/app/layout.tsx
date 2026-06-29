@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+import Script from "next/script";
 import { Toaster } from "sonner";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
@@ -76,6 +77,7 @@ export default function RootLayout({
           <Footer />
         </div>
         <Toaster position="bottom-right" toastOptions={{ style: { background: '#111827', border: '1px solid #374151', color: '#F9FAFB' } }} />
+        <Script defer data-domain="electrobridge.vercel.app" src="https://plausible.io/js/script.js" strategy="afterInteractive" />
       </body>
     </html>
   );

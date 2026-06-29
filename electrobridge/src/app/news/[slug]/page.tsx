@@ -3,6 +3,19 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft, ExternalLink, Clock, Calendar, Tag } from "lucide-react";
 import { supabaseAdmin } from "@/lib/supabase";
+import NewsImage from "@/components/NewsImage";
+
+export const revalidate = 1800;
+
+export async function generateStaticParams() {
+  if (!supabaseAdmin?.from) return [];
+  const { data } = await supabaseAdmin
+    .from("news_articles")
+    .select("slug")
+    .not("slug", "is", null)
+    .limit(200);
+  return (data || []).map((article: { slug: string }) => ({ slug: article.slug }));
+}
 
 interface Props {
   params: { slug: string };
@@ -162,12 +175,7 @@ export default async function NewsDetailPage({ params }: Props) {
       <article className="bg-navy-light border border-gray-800 rounded-xl p-6 sm:p-8">
         {article.image_url && (
           <div className="mb-6 -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 rounded-t-xl overflow-hidden">
-            <img
-              src={article.image_url}
-              alt={article.title}
-              className="w-full h-64 sm:h-80 object-cover"
-              onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
-            />
+            <NewsImage src={article.image_url} alt={article.title} />
           </div>
         )}
 

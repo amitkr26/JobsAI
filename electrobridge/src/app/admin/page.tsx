@@ -208,9 +208,14 @@ export default function AdminPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-3xl font-bold text-text-primary">Admin Panel</h1>
-        <Link href="/admin/add-news" className="flex items-center gap-2 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-lg px-4 py-2 text-sm font-medium hover:bg-purple-500/30 transition-colors">
-          <Plus className="w-4 h-4" /> Add News
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/admin/add-opportunity" className="flex items-center gap-2 bg-cyan/20 text-cyan border border-cyan/30 rounded-lg px-4 py-2 text-sm font-medium hover:bg-cyan/30 transition-colors">
+            <Plus className="w-4 h-4" /> Add Opportunity
+          </Link>
+          <Link href="/admin/add-news" className="flex items-center gap-2 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-lg px-4 py-2 text-sm font-medium hover:bg-purple-500/30 transition-colors">
+            <Plus className="w-4 h-4" /> Add News
+          </Link>
+        </div>
       </div>
 
       <div className="flex gap-2 mb-6 border-b border-gray-800 pb-4 overflow-x-auto">

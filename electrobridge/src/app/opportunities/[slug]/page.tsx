@@ -14,6 +14,18 @@ import LinkTypeIndicator from "@/components/LinkTypeIndicator";
 import OpportunityDisclaimer from "@/components/OpportunityDisclaimer";
 import AIOpportunitySummary from "@/components/AIOpportunitySummary";
 
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  if (!supabaseAdmin?.from) return [];
+  const { data } = await supabaseAdmin
+    .from("opportunities")
+    .select("slug")
+    .eq("is_active", true)
+    .not("slug", "is", null);
+  return (data || []).map((opp: { slug: string }) => ({ slug: opp.slug }));
+}
+
 interface Props {
   params: { slug: string };
 }

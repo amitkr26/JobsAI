@@ -1,88 +1,72 @@
 # MASTER_CONTEXT.md — ElectroBridge
-**Ye file OpenCode / AI coding assistant ko deni hai har session ke shuru mein.**
-**Last updated:** June 2026 | **Source:** Live PROJECT_AUDIT.md
+**Ye file OpenCode / AI coding assistant ko har session ke shuru mein deni hai.**
+**Last updated:** June 2026 | **Audit version:** v2 (post-fixes)
 
 ---
 
-## TUM KYA BUILD KAR RAHE HO
+## PROJECT IDENTITY
 
-**ElectroBridge** — India ka trusted electronics + semiconductor career platform.
-URL: https://electrobridge.vercel.app
-GitHub: https://github.com/amitkr26/JobsAI (root directory: `electrobridge/`)
-
-**Core promise:** Har listed opportunity verified honi chahiye. Koi fake job nahi. Koi broken link nahi. Koi expired listing default view mein nahi.
-
-**Primary users:** BTech/MTech/MSc Electronics students, VLSI engineers, embedded engineers, PhD aspirants, JRF/SRF candidates.
-
----
-
-## TECH STACK
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 14.2.0 (App Router) |
-| Language | TypeScript (strict mode) |
-| Styling | Tailwind CSS v3 + @tailwindcss/typography |
-| Database | Supabase (PostgreSQL + RLS) |
+| | |
+|---|---|
+| Name | ElectroBridge |
+| URL | https://electrobridge.vercel.app |
+| GitHub | https://github.com/amitkr26/JobsAI |
+| Root directory | `electrobridge/` |
+| Stack | Next.js 14.2.0 (App Router) + TypeScript + Supabase + Tailwind CSS |
 | Deployment | Vercel (auto-deploy from `main` branch) |
-| Email | Resend (weekly digest) |
-| Icons | lucide-react |
-| Date handling | date-fns |
-| HTML parsing | cheerio (scrapers) |
-| RSS parsing | rss-parser |
-| AI providers | Groq → Gemini → OpenRouter → Cloudflare → HuggingFace (fallback chain) |
+| Path alias | `@/*` → `./src/*` |
 
-**Project root on disk:** `electrobridge/`
-**Source code:** `electrobridge/src/`
-**Path alias:** `@/*` → `./src/*`
+**Mission:** India ka trusted electronics + semiconductor career platform. Har listed opportunity verified honi chahiye. Koi fake job nahi. Koi broken link nahi. Koi expired listing default view mein nahi.
 
 ---
 
-## FONTS & COLORS (Tailwind config)
+## TECH STACK & KEY PACKAGES
 
-**Fonts:**
-- Display: Space Grotesk (Google Fonts)
-- Body: Inter (Google Fonts)
+| Package | Version | Use |
+|---------|---------|-----|
+| next | 14.2.0 | Framework |
+| typescript | ^5 | Language |
+| tailwindcss | ^3.4.1 | Styling |
+| @supabase/supabase-js | ^2.108.2 | Database |
+| sonner | ^2.0.7 | Toast notifications |
+| date-fns | ^3.6.0 | Date formatting |
+| lucide-react | ^0.383.0 | Icons |
+| clsx | ^2.1.1 | Conditional classNames |
+| cheerio | ^1.2.0 | HTML scraping |
+| rss-parser | ^3.13.0 | RSS feeds |
+| resend | ^16.6.0 | Email digest |
+| @tailwindcss/typography | ^0.5.20 | Rich text |
 
-**Custom Tailwind colors:**
-- `navy` — primary dark blue
-- `navy-light` — lighter blue
-- `cyan` — accent teal/cyan
-- `purple` — secondary accent
-- `text-primary` — main text
-- `text-muted` — muted text
-- `success` — green
-- `warning` — yellow/orange
-
-**Dark mode:** Enabled via `html class="dark"` in `layout.tsx`
+**Fonts:** Space Grotesk (display) + Inter (body) via next/font in layout.tsx
+**Dark mode:** `html class="dark"` set in layout.tsx
+**Custom Tailwind colors:** navy, navy-light, cyan, purple, text-primary, text-muted, success, warning
 
 ---
 
-## DATABASE SCHEMA (Supabase project: `aqauempuwmbizqoaolop`)
+## DATABASE SCHEMA (Supabase: `aqauempuwmbizqoaolop`)
 
-### Table: `opportunities`
+### `opportunities` (28 records)
 ```
-id                  uuid PK (gen_random_uuid)
+id                  uuid PK
 title               text NOT NULL
 organization        text NOT NULL
-category            text NOT NULL  -- 'JRF' | 'PhD' | 'Job' | 'Internship' | 'Fellowship'
+category            text NOT NULL    -- 'JRF' | 'PhD' | 'Job' | 'Internship' | 'Fellowship'
 location            text
 description         text
 apply_link          text
 official_page_url   text
-deadline            timestamptz    -- nullable = rolling applications
-stipend             text           -- e.g. "₹37,000 + HRA"
+deadline            timestamptz      -- nullable = rolling applications
+stipend             text             -- e.g. "₹37,000 + HRA"
 tags                text[]
-is_active           boolean        -- default true
-verification_status text           -- 'verified' | 'link_unavailable' | 'pending'
+is_active           boolean          -- default true
+verification_status text             -- 'verified' | 'link_unavailable' | 'pending'
 verified_at         timestamptz
-created_at          timestamptz    -- default now()
-apply_clicks        integer        -- default 0
-posted_at           timestamptz    -- default now()
+created_at          timestamptz
+apply_clicks        integer          -- default 0
+posted_at           timestamptz      -- default now()
 ```
-**Current data:** 28 records (10 seed + ~18 scraped)
 
-### Table: `news_articles`
+### `news_articles` (560 records)
 ```
 id           uuid PK
 title        text NOT NULL
@@ -97,153 +81,140 @@ tags         text[]
 published_at timestamptz
 created_at   timestamptz
 ```
-**Current data:** 560 records (from RSS feeds)
 
-### Table: `subscribers`
+### `subscribers` (3 records)
 ```
 id         uuid PK
 email      text UNIQUE NOT NULL
 keywords   text[]
 categories text[]
-is_active  boolean  -- default true
+is_active  boolean
 created_at timestamptz
 ```
-**Current data:** 3 records
 
-### Table: `link_check_logs`
-```
-id              uuid PK
-opportunity_id  uuid
-status_code     integer
-checked_at      timestamptz
-```
+### Other tables
+- `link_check_logs` — opportunity_id, status_code, checked_at
+- `ai_usage_log` — feature, provider, model, prompt_length, response_length, success, error_message
+- `opportunity_reports` — opportunity_id, reason, notes
+- `suggestions` — contact form submissions
+- `telegram_subscribers` — chat_id, keywords, categories
+- `calendar_exports` — opportunity_id, exported_at
 
-### Table: `ai_usage_log`
-```
-id              uuid PK
-feature         text
-provider        text
-model           text
-prompt_length   integer
-response_length integer
-success         boolean
-error_message   text
-created_at      timestamptz
-```
-
-### Table: `opportunity_reports`
-```
-id              uuid PK
-opportunity_id  uuid
-reason          text
-notes           text
-created_at      timestamptz
-```
-
-### Table: `suggestions` (contact form submissions)
-### Table: `telegram_subscribers`
-### Table: `calendar_exports`
+### Supabase client usage rule
+- **Browser/client components** → `supabase` (anon key) from `lib/supabase.ts`
+- **Server/API routes** → `supabaseAdmin` (service_role) from `lib/supabase.ts`
+- Always check `isConfigured` guard before using either client
 
 ---
 
-## FILE STRUCTURE
+## COMPLETE FILE STRUCTURE
 
 ```
 electrobridge/src/
 ├── app/
-│   ├── globals.css
-│   ├── layout.tsx                  -- Root layout, dark mode class, fonts, <Toaster>
-│   ├── page.tsx                    -- Homepage: StatsBar + ExpiringSoon + opps + news
-│   ├── sitemap.ts                  -- Dynamic XML sitemap
-│   ├── not-found.tsx               -- Custom 404 page
-│   ├── error.tsx                   -- Global error boundary (client)
-│   ├── admin/page.tsx              -- Password-protected admin dashboard
-│   ├── admin/add-news/page.tsx     -- Admin: manually add news article
-│   ├── admin/edit-opportunity/[id]/page.tsx -- Admin: edit/delete opportunity
+│   ├── globals.css                          -- Tailwind directives only (no @import fonts)
+│   ├── layout.tsx                           -- Root layout, dark mode, fonts, <Toaster/>
+│   ├── page.tsx                             -- Homepage: StatsBar + ExpiringSoon + opps + news
+│   ├── sitemap.ts                           -- Dynamic XML sitemap
+│   ├── not-found.tsx                        -- Global 404 page
+│   ├── error.tsx                            -- Global error boundary (client component)
+│   ├── admin/
+│   │   ├── page.tsx                         -- Password-protected admin dashboard
+│   │   ├── add-news/page.tsx                -- Manually add news article
+│   │   └── edit-opportunity/[id]/page.tsx   -- Edit / soft-delete opportunity
 │   ├── about/page.tsx
 │   ├── categories/page.tsx
 │   ├── category/[category]/page.tsx
-│   ├── chat/layout.tsx             -- Metadata for AI chat
-│   ├── chat/loading.tsx            -- Chat loading skeleton
-│   ├── chat/page.tsx               -- AI chat interface
-│   ├── contact/page.tsx            -- Contact form → suggestions table
-│   ├── match/layout.tsx            -- Metadata for match page
-│   ├── match/page.tsx              -- AI resume-to-opportunity matching
-│   ├── news/loading.tsx            -- News listing loading skeleton
-│   ├── news/page.tsx               -- News listing
-│   ├── news/[slug]/not-found.tsx   -- News article 404
-│   ├── news/[slug]/page.tsx        -- Single news article
-│   ├── opportunities/loading.tsx   -- Opportunities loading skeleton (6 cards)
-│   ├── opportunities/page.tsx      -- Listing with filters + AI search
-│   ├── opportunities/[slug]/loading.tsx -- Detail page loading skeleton
-│   ├── opportunities/[slug]/not-found.tsx -- Opportunity 404
-│   ├── opportunities/[slug]/page.tsx -- Detail: countdown, share, similar
-│   ├── organizations/page.tsx
-│   ├── organizations/[slug]/page.tsx
-│   ├── resources/international-fellowships/page.tsx
-│   ├── resources/jrf-guide/page.tsx
-│   ├── resources/vlsi-careers/page.tsx
+│   ├── chat/
+│   │   ├── layout.tsx                       -- SEO metadata for chat
+│   │   ├── loading.tsx                      -- Loading state
+│   │   └── page.tsx                         -- AI chat interface
+│   ├── contact/page.tsx                     -- Contact form → suggestions table
+│   ├── match/
+│   │   ├── layout.tsx                       -- SEO metadata for match
+│   │   └── page.tsx                         -- AI resume-to-opportunity matching
+│   ├── news/
+│   │   ├── loading.tsx                      -- 6-card skeleton
+│   │   ├── page.tsx
+│   │   └── [slug]/
+│   │       ├── not-found.tsx
+│   │       └── page.tsx
+│   ├── opportunities/
+│   │   ├── loading.tsx                      -- 6-card skeleton
+│   │   ├── page.tsx                         -- Listing with filters + AI search
+│   │   └── [slug]/
+│   │       ├── loading.tsx                  -- Full-page skeleton
+│   │       ├── not-found.tsx
+│   │       └── page.tsx                     -- Detail: countdown, share, similar
+│   ├── organizations/
+│   │   ├── page.tsx
+│   │   └── [slug]/page.tsx
+│   ├── resources/
+│   │   ├── international-fellowships/page.tsx
+│   │   ├── jrf-guide/page.tsx
+│   │   └── vlsi-careers/page.tsx
 │   └── api/
-│       ├── admin/recheck-link/route.ts    -- POST: recheck one link
-│       ├── ai/chat/route.ts               -- POST: AI chat
-│       ├── ai/expire/route.ts             -- POST: auto-expire past-deadline (cron)
-│       ├── ai/match/route.ts              -- POST: AI resume matching
-│       ├── ai/opportunity-summary/[slug]/route.ts
-│       ├── ai/search/route.ts             -- POST: semantic search
-│       ├── ai/summarize/route.ts          -- POST: text summarization
-│       ├── calendar-export/[id]/route.ts  -- GET: .ics file download
-│       ├── check-links/route.ts           -- POST: batch link health check (cron)
-│       ├── news/route.ts                  -- GET: paginated news
-│       ├── og/route.tsx                   -- GET: OG image
+│       ├── admin/recheck-link/route.ts      -- POST: recheck one link
+│       ├── ai/
+│       │   ├── chat/route.ts                -- POST: AI chat
+│       │   ├── expire/route.ts              -- POST: auto-expire past-deadline (cron)
+│       │   ├── match/route.ts               -- POST: AI resume matching
+│       │   ├── opportunity-summary/[slug]/route.ts
+│       │   ├── search/route.ts              -- POST: semantic search
+│       │   └── summarize/route.ts
+│       ├── calendar-export/[id]/route.ts    -- GET: .ics download
+│       ├── check-links/route.ts             -- POST: batch link check (cron)
+│       ├── news/route.ts                    -- GET: paginated news
+│       ├── og/route.tsx                     -- GET: OG image
 │       ├── og/opportunity/[slug]/route.tsx
-│       ├── opportunities/route.ts         -- GET: filtered opportunities list
-│       ├── opportunities/[id]/route.ts    -- GET: single opportunity
-│       ├── opportunities-feed/route.ts    -- GET: RSS feed
-│       ├── organizations/route.ts         -- GET: orgs with counts
-│       ├── report-issue/route.ts          -- POST: report broken link
-│       ├── scrape/route.ts                -- GET: unified scraper (?mode=news|opportunities|all)
-│       ├── scrape-jobs/route.ts           -- GET: govt jobs scraper
-│       ├── scrape-opportunities/route.ts  -- GET: legacy scraper
-│       ├── seed/route.ts                  -- POST: seed opportunities
-│       ├── seed-news/route.ts             -- POST: seed news
-│       ├── send-digest/route.ts           -- POST: weekly email digest (cron)
-│       ├── similar/[id]/route.ts          -- GET: similar by tag overlap
-│       ├── subscribe/route.ts             -- POST: email subscription
-│       └── track-click/route.ts           -- POST: track apply clicks
+│       ├── opportunities/route.ts           -- GET: filtered list
+│       ├── opportunities/[id]/route.ts      -- GET: single opportunity
+│       ├── opportunities-feed/route.ts      -- GET: RSS feed
+│       ├── organizations/route.ts           -- GET: orgs with counts
+│       ├── report-issue/route.ts            -- POST: report broken link
+│       ├── scrape/route.ts                  -- GET: ?mode=news|opportunities|all
+│       ├── scrape-jobs/route.ts             -- GET: govt jobs scraper
+│       ├── scrape-opportunities/route.ts    -- GET: legacy
+│       ├── seed/route.ts                    -- POST: seed opportunities
+│       ├── seed-news/route.ts               -- POST: seed news
+│       ├── send-digest/route.ts             -- POST: weekly email digest (cron)
+│       ├── similar/[id]/route.ts            -- GET: similar by tags
+│       ├── subscribe/route.ts               -- POST: email subscription
+│       └── track-click/route.ts             -- POST: track apply clicks
 ├── components/
-│   ├── AIAnalyticsPanel.tsx        -- Admin: AI usage stats table
-│   ├── AIOpportunitySummary.tsx    -- Detail page: AI-generated summary
-│   ├── ApplyButton.tsx             -- Tracked apply CTA (calls track-click)
-│   ├── CategoryHero.tsx            -- Category page header
-│   ├── DeadlineCountdown.tsx       -- Color-coded countdown badge (date-fns)
-│   ├── ExpiringSoon.tsx            -- Homepage: closing-soon opps section
+│   ├── AIAnalyticsPanel.tsx       -- Admin: AI usage stats
+│   ├── AIOpportunitySummary.tsx   -- Detail page: AI summary (needs AI key)
+│   ├── ApplyButton.tsx            -- Tracked apply CTA → track-click API
+│   ├── CategoryHero.tsx           -- Category page header
+│   ├── DeadlineCountdown.tsx      -- Color-coded countdown (date-fns)
+│   ├── ExpiringSoon.tsx           -- Homepage: closing-soon opps
 │   ├── Footer.tsx
-│   ├── LoadingSkeleton.tsx         -- Animated loading placeholder
-│   ├── Navbar.tsx                  -- Top nav + mobile menu + orgs link
+│   ├── LoadingSkeleton.tsx        -- Animated placeholder (used by loading.tsx files)
+│   ├── Navbar.tsx                 -- Top nav + mobile menu
 │   ├── NewsCard.tsx
-│   ├── OpportunityCard.tsx         -- Card with NEW badge, posted_at, org link
-│   ├── ReportIssueModal.tsx        -- Modal: report issue (calls report-issue API)
-│   ├── SearchBar.tsx               -- Debounced search
-│   ├── ShareButtons.tsx            -- WhatsApp + Twitter share
-│   ├── SimilarOpportunities.tsx    -- Tag-based similar opps grid
-│   ├── StatsBar.tsx                -- Homepage: live DB counts
-│   ├── SubscribeModal.tsx          -- Email signup modal
-│   └── SubscribeSection.tsx        -- Inline email signup
+│   ├── OpportunityCard.tsx        -- Card: NEW badge, posted_at, org link
+│   ├── ReportIssueModal.tsx       -- Modal → report-issue API (sonner toast)
+│   ├── SearchBar.tsx              -- Debounced search
+│   ├── ShareButtons.tsx           -- WhatsApp + Twitter
+│   ├── SimilarOpportunities.tsx   -- Tag-based grid (supabase direct)
+│   ├── StatsBar.tsx               -- Live DB counts (supabaseAdmin)
+│   ├── SubscribeModal.tsx         -- Email modal → subscribe API (sonner toast)
+│   └── SubscribeSection.tsx       -- Inline signup → subscribe API (sonner toast)
 ├── lib/
-│   ├── supabase.ts                 -- supabase (anon) + supabaseAdmin (service_role), guarded init
-│   ├── email-digest.ts             -- Resend weekly digest logic
-│   ├── telegram-bot.ts             -- Telegram channel posting
-│   ├── types.ts                    -- Core types (may duplicate types/index.ts)
+│   ├── supabase.ts                -- supabase + supabaseAdmin with isConfigured guard
+│   ├── email-digest.ts            -- Resend weekly digest (needs RESEND_API_KEY)
+│   ├── telegram-bot.ts            -- Telegram posting (needs TELEGRAM_BOT_TOKEN)
+│   ├── types.ts                   -- Core types (may overlap with types/index.ts)
 │   ├── ai/
-│   │   └── providers.ts            -- Multi-provider AI: Groq→Gemini→OpenRouter→CF→HF
+│   │   └── providers.ts           -- callAI(): Groq→Gemini→OpenRouter→CF→HF failover
 │   └── scrapers/
 │       ├── types.ts
-│       ├── isro-scraper.ts         -- ISRO careers page (cheerio)
-│       ├── drdo-scraper.ts         -- DRDO vacancies (cheerio)
-│       ├── csir-scraper.ts         -- CSIR recruitment (cheerio)
-│       ├── govt-scraper.ts         -- Govt jobs + CSIR RSS
-│       ├── opportunity-scraper.ts  -- Orchestrator for all scrapers
-│       └── rss-parser.ts           -- 10 news RSS sources
+│       ├── isro-scraper.ts        -- ✅ Working
+│       ├── drdo-scraper.ts        -- ✅ Working
+│       ├── csir-scraper.ts        -- ✅ Working
+│       ├── govt-scraper.ts        -- ✅ Working (FindAPhD blocked by CF)
+│       ├── opportunity-scraper.ts -- Orchestrator
+│       └── rss-parser.ts          -- 10 news RSS sources ✅
 └── types/
     └── index.ts
 ```
@@ -252,7 +223,7 @@ electrobridge/src/
 
 ## ENVIRONMENT VARIABLES
 
-### Set in Vercel ✅
+### Set in Vercel ✅ (working)
 ```
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -261,127 +232,113 @@ NEXT_PUBLIC_ADMIN_PASSWORD
 CRON_SECRET
 ```
 
-### Missing — need to add in Vercel ❌
+### NOT set — need free account signups ❌
 ```
-TELEGRAM_BOT_TOKEN       -- For Telegram channel auto-posting
-TELEGRAM_CHANNEL_ID      -- For Telegram channel auto-posting
-RESEND_API_KEY           -- For weekly email digest
-FROM_EMAIL               -- For email digest sender
-GEMINI_API_KEY           -- Optional AI (free tier available)
-GROQ_API_KEY             -- Optional AI (free tier available)
-OPENROUTER_API_KEY       -- Optional AI
-CLOUDFLARE_AI_TOKEN      -- Optional AI
-CLOUDFLARE_ACCOUNT_ID    -- Optional AI
-HUGGINGFACE_API_KEY      -- Optional AI
+GROQ_API_KEY           -- groq.com (free) → enables all AI features
+GEMINI_API_KEY         -- aistudio.google.com (free) → AI fallback
+RESEND_API_KEY         -- resend.com (free 3k/mo) → email digest
+FROM_EMAIL             -- resend.com → digest sender address
+TELEGRAM_BOT_TOKEN     -- @BotFather on Telegram → auto-posting
+TELEGRAM_CHANNEL_ID    -- Your Telegram channel → auto-posting
+OPENROUTER_API_KEY     -- optional AI fallback
+CLOUDFLARE_AI_TOKEN    -- optional AI fallback
+CLOUDFLARE_ACCOUNT_ID  -- optional AI fallback
+HUGGINGFACE_API_KEY    -- optional AI fallback
 ```
 
 ---
 
 ## CRON JOBS
 
-| Schedule | Endpoint | What it does |
-|----------|----------|-------------|
-| Every 6 hours | `/api/scrape?mode=all` | Scrapes ISRO + DRDO + CSIR for new opportunities + news RSS |
-| Every Sunday 3am UTC | `/api/send-digest` | Sends weekly email digest to subscribers |
-| Daily 3:30am UTC (Supabase pg_cron) | `/api/scrape-jobs` | Govt jobs standalone scraper |
+| Trigger | Endpoint | What |
+|---------|----------|------|
+| Every 6h (Vercel) | `/api/scrape?mode=all` | ISRO + DRDO + CSIR + 10 news RSS |
+| Sunday 3am UTC (Vercel) | `/api/send-digest` | Weekly email to subscribers |
+| Daily 3:30am UTC (Supabase pg_cron) | `/api/scrape-jobs` | Govt jobs scraper |
 
 ---
 
-## SCRAPERS STATUS
+## WHAT WORKS vs WHAT DOESN'T
 
-| Source | Method | Status |
-|--------|--------|--------|
-| ISRO (`isro.gov.in`) | cheerio HTML | ✅ Working |
-| DRDO (`drdo.gov.in`) | cheerio HTML | ✅ Working |
-| CSIR (`csir.res.in`) | cheerio HTML | ✅ Working |
-| CSIR RSS | RSS | ✅ Working |
-| FindAPhD RSS | RSS | ❌ Blocked by Cloudflare |
-| IEEE Spectrum, EE Times, etc (10 sources) | RSS | ✅ Working (560 news articles) |
-
----
-
-## WHAT IS WORKING vs WHAT IS NOT
-
-### ✅ Fully Working
-- Homepage with live stats, ExpiringSoon, latest opps + news
-- Opportunities listing with filters
-- Opportunity detail pages
-- News listing + detail pages
-- Categories, Organizations pages
-- Static resource pages (JRF guide, VLSI careers, International fellowships)
-- Admin dashboard (password protected)
-- Scrapers: ISRO, DRDO, CSIR, RSS news
-- Link checking (batch cron)
-- Email subscription (form works, digest needs RESEND_API_KEY)
+### ✅ Fully working
+- All pages load (homepage, opportunities, news, detail pages, organizations, categories, resources)
+- Scrapers: ISRO, DRDO, CSIR, 10 news RSS sources (560 news articles in DB)
+- Admin dashboard with password protection
+- Admin: edit/delete opportunity, add news article
 - Apply click tracking
-- Issue reporting
+- Issue reporting with toast feedback
+- Email subscription form with toast feedback + validation
+- Contact form with toast feedback
 - Calendar export (.ics)
-- RSS feed output
+- RSS feed output (`/api/opportunities-feed`)
 - OG image generation
 - Similar opportunities
-- Sitemap
+- Link checking cron
+- Dynamic sitemap
+- Loading skeletons (4 routes)
+- Custom 404 pages (global + opportunities + news)
+- Error boundary
 
-### ⚠️ Partially Working (built but needs env vars)
-- Email digest → needs `RESEND_API_KEY` + `FROM_EMAIL`
-- Telegram posting → needs `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHANNEL_ID`
-- AI chat, AI search, AI match, AI summarize → needs at least one AI API key (Groq free, Gemini free)
-- AI opportunity summary on detail pages → same
+### ⚠️ Built but needs env vars to activate
+- AI chat (`/chat`) → needs `GROQ_API_KEY` or `GEMINI_API_KEY`
+- AI match (`/match`) → needs AI key
+- AI search on opportunities page → needs AI key
+- AI opportunity summary on detail pages → needs AI key
+- Weekly email digest → needs `RESEND_API_KEY` + `FROM_EMAIL`
+- Telegram auto-posting → needs `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHANNEL_ID`
 
-### ❌ Known Issues
-- FindAPhD RSS blocked by Cloudflare
-- BEL/HAL websites not scrapable (JS SPAs)
-- `.env.local` secrets committed to git (fix rotates keys + adds to .gitignore)
+### 🔴 Security issues (must fix manually)
+- `electrobridge/.env.local` is committed to GitHub with live `SUPABASE_SERVICE_ROLE_KEY`
+- Admin password is weak (change in Vercel env)
+- Cron secret is weak (change in Vercel env)
 
----
-
-## SECURITY STATUS
-
-| Issue | Severity | Status |
-|-------|----------|--------|
-| `.env.local` committed to git with live secrets | 🔴 CRITICAL | **FIX IMMEDIATELY** |
-| Admin password `electrobridge2026` weak | 🔴 Critical | Change in Vercel env |
-| Cron secret `mysecretcron2026` weak | 🔴 High | Change in Vercel env |
-| No rate limiting on `/api/scrape`, `/api/subscribe` | ⚠️ Medium | Fix later |
-| No input validation on subscribe/report forms | ✅ Fixed | Email regex, UUID check, 500-char limit added |
-
----
-
-## IMPORTANT RULES FOR CODING (do not violate)
-
-1. **Never hardcode opportunity data** — always fetch from Supabase
-2. **Supabase client usage:**
-   - Browser/client components: use `supabase` (anon key) from `lib/supabase.ts`
-   - Server/API routes: use `supabaseAdmin` (service_role) from `lib/supabase.ts`
-   - Always check `isConfigured` guard before using
-3. **TypeScript strict** — no `any` types
-4. **Server components by default** — only add `'use client'` when interactivity needed
-5. **All Supabase queries must handle errors** — show user-friendly messages
-6. **Mobile responsive always** — tailwind mobile-first
-7. **Never skip verification_status** — it must be visible on all opportunity cards
-8. **Admin password is via env var** `NEXT_PUBLIC_ADMIN_PASSWORD` — never hardcode
+### 📝 Minor remaining issues
+- `sitemap.ts` uses inline `createClient` instead of shared supabase instance
+- No rate limiting on `/api/scrape` and `/api/subscribe`
+- FindAPhD RSS blocked by Cloudflare (gracefully returns 0 — not breaking)
+- BEL/HAL not scrapable (JS SPAs)
 
 ---
 
-## NEXT PRIORITIES (in order)
+## KEY PATTERNS TO FOLLOW
 
-### ✅ Completed since last update
-- Toast notifications (sonner) — subscribe, report issue, contact form, admin edit/add
-- `error.tsx` + `not-found.tsx` — global + route-level 404 pages
-- `loading.tsx` — opportunities, news, chat, opportunity detail
-- Double font loading fixed — removed Google Fonts @import from globals.css
-- `LoadingSkeleton.tsx` component created
-- Admin edit/delete opportunity — `/admin/edit-opportunity/[id]`
-- Admin add news manually — `/admin/add-news`
-- SEO metadata — chat layout, match layout, organizations page
-- Input validation — email regex, UUID check, 500-char limit on reports
+```typescript
+// Standard opportunity query (always use these filters)
+.from("opportunities")
+  .select("*")
+  .eq("is_active", true)
+  .or(`deadline.gte.${new Date().toISOString()},deadline.is.null`)
 
-### Still Pending
-1. **Fix `.env.local` git security issue** (manual — rotate keys + add to .gitignore)
-2. **Add at least one AI API key** — Groq (free) or Gemini (free) to enable AI features
-3. **Add Resend key** — enable email digest
-4. **Set up Telegram bot** — auto-post new opportunities
+// Count query (stats)
+.from("opportunities")
+  .select("*", { count: "exact", head: true })
+  .eq("is_active", true)
+
+// Scraper upsert (no duplicates)
+.from("opportunities")
+  .upsert(items, { onConflict: "title,organization" })
+
+// Toast pattern (sonner)
+import { toast } from "sonner"
+toast.success("Done!")
+toast.error("Something went wrong.")
+```
 
 ---
 
-*This file represents the complete state of ElectroBridge as of June 2026.*
-*Always read this file before making any changes to the codebase.*
+## CODING RULES (never break these)
+
+1. Never hardcode opportunity/news data — always fetch from Supabase
+2. `supabase` (anon) for client components, `supabaseAdmin` (service_role) for API routes
+3. All Supabase queries must have error handling
+4. TypeScript strict — no `any` types
+5. Server components by default — `'use client'` only when needed
+6. Mobile responsive always (Tailwind mobile-first)
+7. Use `sonner` toast for all user action feedback
+8. Admin password is `process.env.NEXT_PUBLIC_ADMIN_PASSWORD` — never hardcode
+9. All new API routes must check `CRON_SECRET` if called by cron jobs
+
+---
+
+*ElectroBridge — India's trusted electronics career platform*
+*Context file v2 — June 2026*

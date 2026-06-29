@@ -12,7 +12,8 @@ async function getStats() {
     return { total: 0, jrf: 0, phd: 0, govt: 0, addedThisWeek: 0, newsToday: 0, verified: 0 };
   }
 
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date().toISOString();
+  const today = now.split("T")[0];
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
@@ -20,23 +21,25 @@ async function getStats() {
     { count: totalActive },
     { count: jrfCount },
     { count: phdCount },
+    { count: govtCount },
     { count: addedThisWeekCount },
     { count: newsTodayCount },
     { count: verifiedCount },
   ] = await Promise.all([
-    supabaseAdmin.from("opportunities").select("*", { count: "exact", head: true }).eq("is_active", true).or(`deadline.gte.${today},deadline.is.null`),
-    supabaseAdmin.from("opportunities").select("*", { count: "exact", head: true }).eq("is_active", true).eq("category", "JRF").or(`deadline.gte.${today},deadline.is.null`),
-    supabaseAdmin.from("opportunities").select("*", { count: "exact", head: true }).eq("is_active", true).eq("category", "PhD").or(`deadline.gte.${today},deadline.is.null`),
-    supabaseAdmin.from("opportunities").select("*", { count: "exact", head: true }).eq("is_active", true).gte("posted_at", weekAgo).or(`deadline.gte.${today},deadline.is.null`),
+    supabaseAdmin.from("opportunities").select("*", { count: "exact", head: true }).eq("is_active", true).or(`deadline.gte.${now},deadline.is.null`),
+    supabaseAdmin.from("opportunities").select("*", { count: "exact", head: true }).eq("is_active", true).eq("category", "JRF").or(`deadline.gte.${now},deadline.is.null`),
+    supabaseAdmin.from("opportunities").select("*", { count: "exact", head: true }).eq("is_active", true).eq("category", "PhD").or(`deadline.gte.${now},deadline.is.null`),
+    supabaseAdmin.from("opportunities").select("*", { count: "exact", head: true }).eq("is_active", true).eq("category", "Govt Job").or(`deadline.gte.${now},deadline.is.null`),
+    supabaseAdmin.from("opportunities").select("*", { count: "exact", head: true }).eq("is_active", true).gte("posted_at", weekAgo).or(`deadline.gte.${now},deadline.is.null`),
     supabaseAdmin.from("news_articles").select("*", { count: "exact", head: true }).gte("published_at", yesterday),
-    supabaseAdmin.from("opportunities").select("*", { count: "exact", head: true }).eq("is_active", true).eq("verification_status", "verified").or(`deadline.gte.${today},deadline.is.null`),
+    supabaseAdmin.from("opportunities").select("*", { count: "exact", head: true }).eq("is_active", true).eq("verification_status", "verified").or(`deadline.gte.${now},deadline.is.null`),
   ]);
 
   return {
     total: totalActive || 0,
     jrf: jrfCount || 0,
     phd: phdCount || 0,
-    govt: 0,
+    govt: govtCount || 0,
     addedThisWeek: addedThisWeekCount || 0,
     newsToday: newsTodayCount || 0,
     verified: verifiedCount || 0,
@@ -169,22 +172,30 @@ export default async function Home() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="bg-navy-light border border-gray-800 rounded-xl p-5 text-center hover:border-cyan/20 transition-colors">
+            <p className="text-3xl font-bold text-cyan font-display">{stats.total}</p>
+            <p className="text-text-muted text-xs mt-1">Active Opportunities</p>
+          </div>
           <div className="bg-navy-light border border-gray-800 rounded-xl p-5 text-center hover:border-cyan/20 transition-colors">
             <p className="text-3xl font-bold text-cyan font-display">{stats.verified}</p>
-            <p className="text-text-muted text-xs mt-1">Verified Opportunities</p>
+            <p className="text-text-muted text-xs mt-1">Verified</p>
           </div>
           <div className="bg-navy-light border border-gray-800 rounded-xl p-5 text-center hover:border-purple/20 transition-colors">
             <p className="text-3xl font-bold text-purple font-display">{stats.jrf}</p>
-            <p className="text-text-muted text-xs mt-1">JRF Positions</p>
+            <p className="text-text-muted text-xs mt-1">JRF</p>
           </div>
           <div className="bg-navy-light border border-gray-800 rounded-xl p-5 text-center hover:border-green-500/20 transition-colors">
             <p className="text-3xl font-bold text-green-400 font-display">{stats.phd}</p>
-            <p className="text-text-muted text-xs mt-1">PhD Positions</p>
+            <p className="text-text-muted text-xs mt-1">PhD</p>
           </div>
           <div className="bg-navy-light border border-gray-800 rounded-xl p-5 text-center hover:border-amber-400/20 transition-colors">
-            <p className="text-3xl font-bold text-amber-400 font-display">{stats.addedThisWeek}</p>
-            <p className="text-text-muted text-xs mt-1">Added This Week</p>
+            <p className="text-3xl font-bold text-amber-400 font-display">{stats.govt}</p>
+            <p className="text-text-muted text-xs mt-1">Govt Jobs</p>
+          </div>
+          <div className="bg-navy-light border border-gray-800 rounded-xl p-5 text-center hover:border-purple/20 transition-colors">
+            <p className="text-3xl font-bold text-purple font-display">{stats.addedThisWeek}</p>
+            <p className="text-text-muted text-xs mt-1">New This Week</p>
           </div>
         </div>
       </section>
