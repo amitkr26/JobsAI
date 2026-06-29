@@ -449,7 +449,7 @@ const TAG_RULES: TagRule[] = [
     tag: "Device Tech",
   },
   {
-    keywords: ["silicon", "gan", "sic", "gallium", "wide bandgap", "power semiconductor"],
+    keywords: ["silicon", "gan", "gallium", "wide bandgap", "power semiconductor", "silicon carbide"],
     tag: "Wide Bandgap",
   },
   {
@@ -462,7 +462,7 @@ const TAG_RULES: TagRule[] = [
     tag: "EDA",
   },
   {
-    keywords: ["soc", "system on chip", "asic", "fpga", "microcontroller", "risc v", "arm", "x86"],
+    keywords: ["soc", "system on chip", "asic", "fpga", "microcontroller", "risc v", "risc-v", "arm", "x86", "microarchitecture"],
     tag: "Chip Design",
   },
   {
@@ -471,7 +471,7 @@ const TAG_RULES: TagRule[] = [
   },
   // Materials
   {
-    keywords: ["silicon carbide", "sic", "gan", "gallium nitride", "gallium arsenide", "gaas", "indium", "germanium", "wafer material", "substrate"],
+    keywords: ["silicon carbide", "gan", "gallium nitride", "gallium arsenide", "gaas", "indium", "germanium", "wafer material", "substrate"],
     tag: "Materials",
   },
   // Equipment
@@ -508,7 +508,7 @@ const TAG_RULES: TagRule[] = [
     tag: "IoT",
   },
   {
-    keywords: ["electric vehicle", "ev", "battery", "bms", "charging", "power electronics", "inverter", "motor drive"],
+    keywords: ["electric vehicle", "ev", "battery technology", "bms", "charging", "power electronics", "inverter", "motor drive", "solid state battery"],
     tag: "EV/Power",
   },
   {
@@ -527,6 +527,11 @@ const TAG_RULES: TagRule[] = [
   {
     keywords: ["intel", "amd", "nvidia", "qualcomm", "apple silicon", "ryzen", "xeon", "core ultra", "snapdragon", "dimensity", "exynos", "tensor"],
     tag: "Processors",
+  },
+  // Fallback: any electronics article that didn't match a specific tag
+  {
+    keywords: ["chip", "semiconductor", "electronics", "wafer", "transistor", "circuit"],
+    tag: "Semiconductor",
   },
 ];
 
@@ -549,7 +554,13 @@ export function autoTagArticle(title: string, summary: string): string[] {
 
   for (const rule of TAG_RULES) {
     for (const kw of rule.keywords) {
-      if (text.includes(kw)) {
+      if (kw.length <= 3) {
+        const re = new RegExp(`\\b${kw}\\b`, "i");
+        if (re.test(text)) {
+          matches.add(rule.tag);
+          break;
+        }
+      } else if (text.includes(kw)) {
         matches.add(rule.tag);
         break;
       }
