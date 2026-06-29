@@ -115,21 +115,21 @@ export const NEWS_SOURCES: NewsSourceConfig[] = [
   },
   // ── Opportunity sources ──
   {
-    name: "FindAPhD — Semiconductor",
-    url: "https://www.findaphd.com/phds/rss/?Keywords=semiconductor&StartDate=7",
-    tags: ["PhD", "semiconductor", "international"],
+    name: "Academic Positions",
+    url: "https://academicpositions.com/feed",
+    tags: ["PhD", "academic", "international", "postdoc"],
     type: "opportunity",
   },
   {
-    name: "FindAPhD — Electronics Thin Film",
-    url: "https://www.findaphd.com/phds/rss/?Keywords=thin+film+electronics",
-    tags: ["PhD", "thin film", "international"],
+    name: "Scholarship Roar",
+    url: "https://www.scholarshiproar.com/feed/",
+    tags: ["fellowship", "PhD", "scholarship", "international"],
     type: "opportunity",
   },
   {
-    name: "FindAPhD — Spintronics",
-    url: "https://www.findaphd.com/phds/rss/?Keywords=spintronics",
-    tags: ["PhD", "spintronics", "international"],
+    name: "Jobs.ac.uk — Electronics",
+    url: "https://www.jobs.ac.uk/feeds/rss/?q=electronics+semiconductor",
+    tags: ["PhD", "research", "UK", "electronics"],
     type: "opportunity",
   },
 ];

@@ -2,11 +2,6 @@ import Parser from "rss-parser";
 import type { ScrapedOpportunity, ScrapeResult } from "./types";
 import { scrapeDRDO } from "./drdo-scraper";
 
-const FINDPHD_KEYWORDS = [
-  { keywords: "semiconductor", tags: ["semiconductor", "PhD", "research"] },
-  { keywords: "electronics+thin+film", tags: ["electronics", "thin film", "materials"] },
-];
-
 function inferCategory(title: string): string {
   const t = title.toUpperCase();
   if (t.includes("PHD") || t.includes("DOCTORAL") || t.includes("FELLOWSHIP")) return "Fellowship";
@@ -105,44 +100,6 @@ async function scrapeCSIR_RSS(): Promise<ScrapedOpportunity[]> {
   return results;
 }
 
-async function scrapeFindAPhD(keywords: string, baseTags: string[]): Promise<ScrapedOpportunity[]> {
-  const results: ScrapedOpportunity[] = [];
-  try {
-    const url = `https://www.findaphd.com/phds/rss/?Keywords=${encodeURIComponent(keywords)}`;
-    const parser = new Parser({
-      timeout: 8000,
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; ElectroBridge/1.0)",
-        "Accept": "application/rss+xml, application/xml, text/xml",
-      },
-    });
-    const feed = await parser.parseURL(url);
-    for (const item of feed.items) {
-      const title = item.title?.trim();
-      if (!title || title.length < 5) continue;
-      const link = item.link?.trim() || "";
-      const description = item.contentSnippet?.trim() || item.content?.trim() || "";
-
-      results.push({
-        title,
-        organization: item.creator || item.source?.title || "FindAPhD",
-        category: inferCategory(title),
-        location: inferLocation(title, description),
-        stipend: null,
-        deadline: inferDeadline(description),
-        eligibility: null,
-        description: description.substring(0, 300),
-        apply_link: link,
-        source_url: link || url,
-        tags: inferTags(title, description, [...baseTags, "PhD", "international"]),
-      });
-    }
-  } catch (error) {
-    console.error(`FindAPhD scraper failed (${keywords}):`, error);
-  }
-  return results;
-}
-
 export async function scrapeGovtJobs(): Promise<{
   opportunities: ScrapedOpportunity[];
   results: ScrapeResult[];
@@ -151,10 +108,6 @@ export async function scrapeGovtJobs(): Promise<{
   const sources: { name: string; scraper: () => Promise<ScrapedOpportunity[]> }[] = [
     { name: "DRDO", scraper: scrapeDRDO },
     { name: "CSIR RSS", scraper: scrapeCSIR_RSS },
-    ...FINDPHD_KEYWORDS.map((kw) => ({
-      name: `findaphd:${kw.keywords}`,
-      scraper: () => scrapeFindAPhD(kw.keywords, kw.tags),
-    })),
   ];
 
   const allResults: ScrapeResult[] = [];
