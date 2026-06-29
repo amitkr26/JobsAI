@@ -48,19 +48,31 @@ JobsAI/
     └── src/
         ├── app/
         │   ├── globals.css
-        │   ├── layout.tsx
-        │   ├── page.tsx                 ← Homepage w/ stats + ExpiringSoon
+        │   ├── layout.tsx                 ← Root layout with metadata + <Toaster>
+        │   ├── page.tsx                   ← Homepage w/ stats + ExpiringSoon
         │   ├── sitemap.ts
+        │   ├── not-found.tsx              ← Custom 404
+        │   ├── error.tsx                  ← Global error boundary (client)
         │   ├── admin/page.tsx
+        │   ├── admin/add-news/page.tsx    ← Manually add news article
+        │   ├── admin/edit-opportunity/[id]/page.tsx ← Edit/delete opportunity
         │   ├── about/page.tsx
         │   ├── categories/page.tsx
         │   ├── category/[category]/page.tsx
+        │   ├── chat/layout.tsx            ← SEO metadata
+        │   ├── chat/loading.tsx           ← Loading skeleton
         │   ├── chat/page.tsx
         │   ├── contact/page.tsx
+        │   ├── match/layout.tsx           ← SEO metadata
         │   ├── match/page.tsx
+        │   ├── news/loading.tsx           ← 6-card skeleton
         │   ├── news/page.tsx
+        │   ├── news/[slug]/not-found.tsx  ← Article 404
         │   ├── news/[slug]/page.tsx
+        │   ├── opportunities/loading.tsx  ← 6-card skeleton
         │   ├── opportunities/page.tsx
+        │   ├── opportunities/[slug]/loading.tsx ← Full-page skeleton
+        │   ├── opportunities/[slug]/not-found.tsx ← Opportunity 404
         │   ├── opportunities/[slug]/page.tsx
         │   ├── organizations/page.tsx
         │   ├── organizations/[slug]/page.tsx
@@ -143,6 +155,8 @@ JobsAI/
 |-------|------|--------|
 | `/` | `src/app/page.tsx` | ✅ Live - Stats bar, ExpiringSoon, latest opps & news |
 | `/admin` | `src/app/admin/page.tsx` | ✅ Live - Password-protected dashboard |
+| `/admin/add-news` | `src/app/admin/add-news/page.tsx` | ✅ Live - Add news articles manually |
+| `/admin/edit-opportunity/[id]` | `src/app/admin/edit-opportunity/[id]/page.tsx` | ✅ Live - Edit/delete opportunities |
 | `/about` | `src/app/about/page.tsx` | ✅ Live |
 | `/categories` | `src/app/categories/page.tsx` | ✅ Live |
 | `/category/[category]` | `src/app/category/[category]/page.tsx` | ✅ Live |
@@ -489,7 +503,7 @@ API Layer                    Orchestrator Layer              Source Layer
 
 - ✅ Dynamic className generation with template literals (status badges, deadline colors)
 - ✅ `clsx` library available in dependencies (for conditional classes)
-- ❌ No toast/popup notification system installed (no `sonner`, `react-hot-toast`)
+- ✅ `sonner` installed for toast notifications
 - ❌ No form validation library (plain HTML forms + state)
 - ✅ Responsive mobile-first approach in components
 - ✅ Server components for page content, client components for interactivity
@@ -538,20 +552,22 @@ API Layer                    Orchestrator Layer              Source Layer
 - 🔴 **Weak CRON secret**: `mysecretcron2026` (hardcoded fallback in `check-links/route.ts:22`)
 
 ### Medium
-- ⚠️ **No toast/notification system**: User actions (subscribe, apply, report) have no feedback UI
 - ⚠️ **`pg` in devDependencies**: Installed but never imported in application code (likely for `supabase db` CLI only)
 - ⚠️ **`llms.txt` in public/**: Contains 10 lines (unknown content, likely AI training directive)
-- ⚠️ **No error boundaries**: No `error.tsx` or `not-found.tsx` files in any route segment
-- ⚠️ **No loading states**: Only `LoadingSkeleton.tsx` exists but no `loading.tsx` files
 - ⚠️ **sitemap.ts uses inline `createClient`**: Bypasses the guarded initialization from `supabase.ts`
 
 ### Low
 - 📝 **`supabase-migration.sql` is not executed via migration tool**: Must be run manually in Supabase SQL Editor
 - 📝 **No TypeScript strict checks on API response types**: Most `fetch` calls use `any` or no type assertion
-- 📝 **No index.html or 404 page**: Vercel default 404 page shown
 - 📝 **No `.nvmrc` or `.node-version`**: No pinned Node.js version
 - 📝 **No `.prettierrc` or `.eslintrc` custom config**: Using Next.js defaults
-- 📝 **`globals.css` uses Google Fonts `@import`**: Should use next/font (already configured in layout.tsx — double loading)
+
+### ✅ Fixed Since Initial Audit
+- No toast/notification system → **sonner installed with toasts on all user actions**
+- No error boundaries → **`error.tsx` + `not-found.tsx` + route-level 404s created**
+- No loading states → **`LoadingSkeleton` + 4 `loading.tsx` files created**
+- Google Fonts double loading → **removed `@import` from `globals.css`**
+- No input validation → **email regex, UUID check, 500-char limit added**
 
 ### Blockers
 - 🚫 **FindAPhD RSS**: Blocked by Cloudflare, returns 0 items gracefully
@@ -601,6 +617,7 @@ npm run lint      # ESLint (next lint)
 | `react-dom` | ^18 | DOM rendering | Large |
 | `resend` | ^16.6.0 | Email sending (digest) | Small |
 | `rss-parser` | ^3.13.0 | RSS feed parsing | Moderate |
+| `sonner` | ^2.0.7 | Toast notifications | Tiny |
 | `postcss` | ^8 | CSS processing (build-time) | Small (dev) |
 
 ### Dev Dependencies (6 packages)
@@ -665,24 +682,31 @@ PROVIDER_ORDER: ["groq", "gemini", "openrouter", "cloudflare", "huggingface"]
 
 ## 15. Recommendations (Priority Order)
 
+### ✅ Completed Since Initial Audit
+- Toast notifications (sonner) installed and wired to subscribe, report, contact
+- `error.tsx` + `not-found.tsx` + route-level 404s created
+- `loading.tsx` files + `LoadingSkeleton` component created
+- Google Fonts double loading fixed (removed `@import` from globals.css)
+- Input validation on subscribe (email regex) and report (UUID check, 500-char limit)
+- SEO metadata added for chat, match, organizations pages
+- Admin: edit/delete opportunity page (`/admin/edit-opportunity/[id]`)
+- Admin: add news article page (`/admin/add-news`)
+
 ### Immediate (Security)
 1. **Rotate and remove secrets from git**: Rotate `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, review admin password. Delete `.env.local` from git tracking, add to `.gitignore`. Consider using `git-filter-repo` to scrub history.
 2. **Set all env vars in Vercel**: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHANNEL_ID`, `RESEND_API_KEY`, `FROM_EMAIL` are still missing.
 
 ### Short Term (Quality of Life)
-3. **Install toast library**: Add `sonner` or `react-hot-toast` for user feedback on subscribe, apply, report actions.
-4. **Add `error.tsx` and `not-found.tsx`**: Graceful error handling in App Router.
-5. **Add `loading.tsx`**: Skeleton loading states for page transitions.
-6. **Stronger admin password**: Generate a random one, store only in Vercel env.
+3. **Stronger admin password**: Generate a random one, store only in Vercel env.
+4. **Fix sitemap.ts inline `createClient`**: Use shared supabase instance instead.
 
 ### Medium Term (Features)
-7. **Create Telegram bot via @BotFather**: Add TELEGRAM_BOT_TOKEN env var to enable auto-posting.
-8. **Create Resend account**: Add RESEND_API_KEY + FROM_EMAIL to enable weekly digest.
-9. **Configure at least one AI provider**: Get a free Groq or Gemini API key to enable AI features.
-10. **Monitor scraper data quality**: Check for duplicates, stale entries, broken links.
+5. **Create Telegram bot via @BotFather**: Add TELEGRAM_BOT_TOKEN env var to enable auto-posting.
+6. **Create Resend account**: Add RESEND_API_KEY + FROM_EMAIL to enable weekly digest.
+7. **Configure at least one AI provider**: Get a free Groq or Gemini API key to enable AI features.
+8. **Monitor scraper data quality**: Check for duplicates, stale entries, broken links.
 
 ### Long Term (Architecture)
-11. **Move `supabase-migration.sql` to Supabase migrations folder**: Use proper migration tooling.
-12. **Add comprehensive error boundaries**: Wrap page segments in error boundaries.
-13. **Add analytics**: Plausible or Umami for privacy-friendly usage tracking.
-14. **Consider ISR for opportunity pages**: Revalidate every few hours instead of SSR every request.
+9. **Move `supabase-migration.sql` to Supabase migrations folder**: Use proper migration tooling.
+10. **Add analytics**: Plausible or Umami for privacy-friendly usage tracking.
+11. **Consider ISR for opportunity pages**: Revalidate every few hours instead of SSR every request.

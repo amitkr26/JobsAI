@@ -152,19 +152,31 @@ created_at      timestamptz
 electrobridge/src/
 ├── app/
 │   ├── globals.css
-│   ├── layout.tsx                  -- Root layout, dark mode class, fonts
+│   ├── layout.tsx                  -- Root layout, dark mode class, fonts, <Toaster>
 │   ├── page.tsx                    -- Homepage: StatsBar + ExpiringSoon + opps + news
 │   ├── sitemap.ts                  -- Dynamic XML sitemap
+│   ├── not-found.tsx               -- Custom 404 page
+│   ├── error.tsx                   -- Global error boundary (client)
 │   ├── admin/page.tsx              -- Password-protected admin dashboard
+│   ├── admin/add-news/page.tsx     -- Admin: manually add news article
+│   ├── admin/edit-opportunity/[id]/page.tsx -- Admin: edit/delete opportunity
 │   ├── about/page.tsx
 │   ├── categories/page.tsx
 │   ├── category/[category]/page.tsx
+│   ├── chat/layout.tsx             -- Metadata for AI chat
+│   ├── chat/loading.tsx            -- Chat loading skeleton
 │   ├── chat/page.tsx               -- AI chat interface
 │   ├── contact/page.tsx            -- Contact form → suggestions table
+│   ├── match/layout.tsx            -- Metadata for match page
 │   ├── match/page.tsx              -- AI resume-to-opportunity matching
+│   ├── news/loading.tsx            -- News listing loading skeleton
 │   ├── news/page.tsx               -- News listing
+│   ├── news/[slug]/not-found.tsx   -- News article 404
 │   ├── news/[slug]/page.tsx        -- Single news article
+│   ├── opportunities/loading.tsx   -- Opportunities loading skeleton (6 cards)
 │   ├── opportunities/page.tsx      -- Listing with filters + AI search
+│   ├── opportunities/[slug]/loading.tsx -- Detail page loading skeleton
+│   ├── opportunities/[slug]/not-found.tsx -- Opportunity 404
 │   ├── opportunities/[slug]/page.tsx -- Detail: countdown, share, similar
 │   ├── organizations/page.tsx
 │   ├── organizations/[slug]/page.tsx
@@ -316,13 +328,9 @@ HUGGINGFACE_API_KEY      -- Optional AI
 - AI opportunity summary on detail pages → same
 
 ### ❌ Known Issues
-- No toast/notification system (user has no feedback after subscribe/report)
-- No `error.tsx` files (App Router error boundaries missing)
-- No `not-found.tsx` (404 is Vercel default)
-- No `loading.tsx` files (only LoadingSkeleton component exists)
-- `globals.css` double-loads Google Fonts (also in layout.tsx via next/font)
 - FindAPhD RSS blocked by Cloudflare
 - BEL/HAL websites not scrapable (JS SPAs)
+- `.env.local` secrets committed to git (fix rotates keys + adds to .gitignore)
 
 ---
 
@@ -334,7 +342,7 @@ HUGGINGFACE_API_KEY      -- Optional AI
 | Admin password `electrobridge2026` weak | 🔴 Critical | Change in Vercel env |
 | Cron secret `mysecretcron2026` weak | 🔴 High | Change in Vercel env |
 | No rate limiting on `/api/scrape`, `/api/subscribe` | ⚠️ Medium | Fix later |
-| No input validation on contact/subscribe forms | ⚠️ Medium | Fix later |
+| No input validation on subscribe/report forms | ✅ Fixed | Email regex, UUID check, 500-char limit added |
 
 ---
 
@@ -356,13 +364,22 @@ HUGGINGFACE_API_KEY      -- Optional AI
 
 ## NEXT PRIORITIES (in order)
 
-1. **Fix `.env.local` git security issue** (manual, not code)
-2. **Add toast notifications** — install `sonner` library for user feedback
-3. **Add `error.tsx` + `not-found.tsx`** — proper error handling pages
-4. **Add `loading.tsx`** — page transition skeletons
-5. **Add at least one AI API key** — Groq (free) or Gemini (free) to enable AI features
-6. **Add Resend key** — enable email digest
-7. **Set up Telegram bot** — auto-post new opportunities
+### ✅ Completed since last update
+- Toast notifications (sonner) — subscribe, report issue, contact form, admin edit/add
+- `error.tsx` + `not-found.tsx` — global + route-level 404 pages
+- `loading.tsx` — opportunities, news, chat, opportunity detail
+- Double font loading fixed — removed Google Fonts @import from globals.css
+- `LoadingSkeleton.tsx` component created
+- Admin edit/delete opportunity — `/admin/edit-opportunity/[id]`
+- Admin add news manually — `/admin/add-news`
+- SEO metadata — chat layout, match layout, organizations page
+- Input validation — email regex, UUID check, 500-char limit on reports
+
+### Still Pending
+1. **Fix `.env.local` git security issue** (manual — rotate keys + add to .gitignore)
+2. **Add at least one AI API key** — Groq (free) or Gemini (free) to enable AI features
+3. **Add Resend key** — enable email digest
+4. **Set up Telegram bot** — auto-post new opportunities
 
 ---
 
