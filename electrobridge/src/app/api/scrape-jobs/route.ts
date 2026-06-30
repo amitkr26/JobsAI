@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       message: "Govt jobs scrape complete",
+      deprecation_notice: "This endpoint is deprecated. DRDO is now scraped by the main /api/scrape endpoint. Use /api/scrape?mode=opportunities instead.",
       sources: results,
       total_fetched: total,
       inserted,

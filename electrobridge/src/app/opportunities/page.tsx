@@ -83,65 +83,100 @@ export default function OpportunitiesPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">
-          All Opportunities
-        </h1>
-        <p className="text-[#94A3B8] mt-2 text-sm">
-          Browse JRF, PhD, government, and private sector opportunities.
-        </p>
+      <div className="flex gap-8">
+        {/* Left Sidebar — Filters (280px) */}
+        <aside className="hidden lg:block w-[280px] flex-shrink-0">
+          <FilterBar
+            selectedCategory={category}
+            selectedEligibility={eligibility}
+            selectedLocation={location}
+            selectedDeadline={deadline}
+            onCategoryChange={setCategory}
+            onEligibilityChange={setEligibility}
+            onLocationChange={setLocation}
+            onDeadlineChange={setDeadline}
+          />
+        </aside>
+
+        {/* Main Content */}
+        <div className="flex-1 min-w-0">
+          {/* Page header */}
+          <div className="mb-6">
+            <h1 className="font-display text-2xl font-bold text-text-primary">All Opportunities</h1>
+            <p className="text-text-secondary mt-1 text-sm">Browse JRF, PhD, government, and private sector opportunities.</p>
+          </div>
+
+          {/* Search + toggle row */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex-1">
+              <SearchBar onSearch={handleSearch} />
+              {aiSearching && (
+                <div className="flex items-center gap-1 mt-1 text-[10px] text-accent">
+                  <Sparkles className="w-3 h-3" />
+                  AI analyzing query...
+                </div>
+              )}
+            </div>
+            <button onClick={() => setShowUnverified(!showUnverified)}
+              className={`inline-flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-lg border transition-colors ${
+                showUnverified
+                  ? "bg-warning/10 border-warning/30 text-warning"
+                  : "bg-surface/50 border-border text-text-secondary hover:text-text-primary"
+              }`}
+            >
+              {showUnverified ? <EyeOff className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+              {showUnverified ? "Hiding unverified" : "Show unverified"}
+            </button>
+          </div>
+
+          {/* AI chips row */}
+          {Object.keys(aiChips).length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {Object.entries(aiChips).map(([key, value]) => (
+                <span key={key} className="inline-flex items-center gap-1 px-2 py-1 bg-accent/10 text-accent rounded text-xs border border-accent/20">
+                  <Sparkles className="w-3 h-3" />
+                  {key}: {value}
+                  <button onClick={() => { const newChips = { ...aiChips }; delete newChips[key]; setAiChips(newChips); }} className="hover:text-text-primary"><X className="w-3 h-3" /></button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Results count + sort */}
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm text-text-secondary">
+              {loading ? "Searching..." : `${opportunities.length} opportunities found`}
+            </p>
+          </div>
+
+          {/* Loading / Empty / Grid */}
+          {loading ? (
+            <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 text-accent animate-spin" /></div>
+          ) : opportunities.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="w-16 h-16 bg-surface/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ShieldCheck className="w-8 h-8 text-text-muted" />
+              </div>
+              <p className="text-text-secondary text-lg mb-2">No opportunities found.</p>
+              <p className="text-text-secondary text-sm">Try adjusting your filters or check back later.</p>
+              <button onClick={() => { setCategory("All"); setEligibility("All"); setLocation("All"); setDeadline("All"); setSearch(""); setShowUnverified(true); }}
+                className="mt-4 inline-flex items-center gap-2 bg-accent text-bg-primary font-semibold rounded-lg px-4 py-2 text-sm hover:bg-accent-hover transition-colors"
+              >
+                Reset & Show All
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {opportunities.map((opp) => (
+                <OpportunityCard key={opp.id} opportunity={opp} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="space-y-4 mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex-1 max-w-md">
-            <SearchBar onSearch={handleSearch} />
-            {aiSearching && (
-              <div className="flex items-center gap-1 mt-1 text-[10px] text-purple-400">
-                <Sparkles className="w-3 h-3" />
-                AI analyzing query...
-              </div>
-            )}
-          </div>
-          <button
-            onClick={() => setShowUnverified(!showUnverified)}
-            className={`inline-flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-lg border transition-colors ${
-              showUnverified
-                ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                : "bg-[#111827]/50 border-[#1F2937] text-[#94A3B8] hover:text-white"
-            }`}
-          >
-            {showUnverified ? (
-              <EyeOff className="w-3.5 h-3.5" />
-            ) : (
-              <ShieldCheck className="w-3.5 h-3.5" />
-            )}
-            {showUnverified ? "Hiding unverified" : "Show unverified"}
-          </button>
-        </div>
-        {Object.keys(aiChips).length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(aiChips).map(([key, value]) => (
-              <span
-                key={key}
-                className="inline-flex items-center gap-1 px-2 py-1 bg-purple-900/30 text-purple-300 rounded text-xs border border-purple-500/30"
-              >
-                <Sparkles className="w-3 h-3" />
-                {key}: {value}
-                <button
-                  onClick={() => {
-                    const newChips = { ...aiChips };
-                    delete newChips[key];
-                    setAiChips(newChips);
-                  }}
-                  className="hover:text-white"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
+      {/* Mobile filter drawer */}
+      <div className="lg:hidden mt-4">
         <FilterBar
           selectedCategory={category}
           selectedEligibility={eligibility}
@@ -153,41 +188,6 @@ export default function OpportunitiesPage() {
           onDeadlineChange={setDeadline}
         />
       </div>
-
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-6 h-6 text-[#00E5FF] animate-spin" />
-        </div>
-      ) : opportunities.length === 0 ? (
-        <div className="text-center py-20">
-          <div className="w-16 h-16 bg-[#111827]/50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <ShieldCheck className="w-8 h-8 text-[#94A3B8]" />
-          </div>
-          <p className="text-[#94A3B8] text-lg mb-2">No opportunities found.</p>
-          <p className="text-[#94A3B8] text-sm">
-            Try adjusting your filters, enable unverified listings, or check back later.
-          </p>
-          <button
-            onClick={() => {
-              setCategory("All");
-              setEligibility("All");
-              setLocation("All");
-              setDeadline("All");
-              setSearch("");
-              setShowUnverified(true);
-            }}
-            className="mt-4 inline-flex items-center gap-2 bg-[#00E5FF] text-[#0B1120] font-semibold rounded-lg px-4 py-2 text-sm hover:bg-[#00E5FF]/90 transition-colors"
-          >
-            Reset & Show All
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {opportunities.map((opp) => (
-            <OpportunityCard key={opp.id} opportunity={opp} />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

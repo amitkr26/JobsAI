@@ -1,6 +1,5 @@
 import Parser from "rss-parser";
 import type { ScrapedOpportunity, ScrapeResult } from "./types";
-import { scrapeDRDO } from "./drdo-scraper";
 
 function inferCategory(title: string): string {
   const t = title.toUpperCase();
@@ -106,7 +105,6 @@ export async function scrapeGovtJobs(): Promise<{
   total: number;
 }> {
   const sources: { name: string; scraper: () => Promise<ScrapedOpportunity[]> }[] = [
-    { name: "DRDO", scraper: scrapeDRDO },
     { name: "CSIR RSS", scraper: scrapeCSIR_RSS },
   ];
 

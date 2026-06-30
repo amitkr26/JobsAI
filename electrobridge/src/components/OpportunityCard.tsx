@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, Currency, Bookmark, ExternalLink } from "lucide-react";
+import { MapPin, Currency, Bookmark, ExternalLink, Heart } from "lucide-react";
 import type { Opportunity } from "@/types";
 import CategoryBadge from "./CategoryBadge";
 import DeadlineCountdown from "./DeadlineCountdown";
@@ -11,6 +11,22 @@ import VerificationBadge from "./VerificationBadge";
 
 interface OpportunityCardProps {
   opportunity: Opportunity;
+}
+
+const ORG_COLORS: Record<string, string> = {
+  isro: "bg-org-isro",
+  intel: "bg-org-intel",
+  tifr: "bg-org-tifr",
+  tata: "bg-org-tata",
+  drdo: "bg-org-drdo",
+};
+
+function getOrgColor(org: string): string {
+  const key = org.toLowerCase().replace(/[^a-z]/g, "");
+  for (const [k, v] of Object.entries(ORG_COLORS)) {
+    if (key.includes(k)) return v;
+  }
+  return "bg-accent/20";
 }
 
 function orgSlug(name: string): string {
@@ -68,23 +84,23 @@ export default function OpportunityCard({ opportunity }: OpportunityCardProps) {
       href={`/opportunities/${opportunity.slug}`}
       className={`block group ${linkUnavailable ? "opacity-70" : ""}`}
     >
-      <div className="bg-[#1A2438] border border-[#1F2937] rounded-xl p-5 hover:border-[#00E5FF]/30 hover:shadow-[0_0_24px_rgba(0,229,255,0.08)] hover:-translate-y-0.5 transition-all duration-200 h-full">
+      <div className="bg-surface border border-border rounded-card p-5 hover:border-accent/30 hover:shadow-glow-cyan hover:-translate-y-0.5 transition-all duration-200 h-full">
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-[#00E5FF]/10 flex items-center justify-center flex-shrink-0">
-            <span className="text-[#00E5FF] text-sm font-bold">
+          <div className={cn("w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0", getOrgColor(opportunity.organization))}>
+            <span className="text-text-primary text-sm font-bold">
               {getInitials(opportunity.organization)}
             </span>
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <h3 className="text-white font-semibold text-sm leading-snug hover:text-[#00E5FF] line-clamp-2">
+                <h3 className="text-text-primary font-semibold text-sm leading-snug hover:text-accent line-clamp-2">
                   {opportunity.title}
                 </h3>
                 <div className="flex items-center gap-2 mt-0.5">
                   <Link
                     href={`/organizations/${orgSlug(opportunity.organization)}`}
-                    className="text-[10px] text-[#94A3B8] hover:text-[#00E5FF]"
+                    className="text-xs text-text-secondary hover:text-accent"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {opportunity.organization}
@@ -97,67 +113,60 @@ export default function OpportunityCard({ opportunity }: OpportunityCardProps) {
               <button
                 onClick={handleBookmark}
                 className={`transition-colors flex-shrink-0 ${
-                  isBookmarked ? "text-[#00E5FF]" : "text-[#94A3B8] hover:text-[#00E5FF]"
+                  isBookmarked ? "text-accent" : "text-text-muted hover:text-accent"
                 }`}
                 title={isBookmarked ? "Remove bookmark" : "Bookmark"}
               >
-                <Bookmark className={`w-4 h-4 ${isBookmarked ? "fill-[#00E5FF]" : ""}`} />
+                <Heart className={`w-4 h-4 ${isBookmarked ? "fill-accent" : ""}`} />
               </button>
             </div>
-            <div className="flex items-center gap-2 mt-1">
-              {opportunity.posted_at && (
-                <span className="text-[#94A3B8] text-[10px]">
-                  {getDaysAgo(opportunity.posted_at)}
-                </span>
-              )}
-              {opportunity.posted_at && isNew(opportunity.posted_at) && (
-                <span className="px-1.5 py-0.5 bg-green-900/40 text-green-400 rounded text-[10px] font-semibold border border-green-500/30">
-                  NEW
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap items-center gap-2 mt-3">
+            <div className="flex items-center gap-2 mt-2">
               <CategoryBadge category={opportunity.category} />
               {opportunity.location && (
-                <span className="flex items-center gap-1 text-[#94A3B8] text-xs">
+                <span className="flex items-center gap-1 text-text-muted text-xs">
                   <MapPin className="w-3 h-3" />
                   {opportunity.location}
                 </span>
               )}
               {opportunity.stipend && (
-                <span className="flex items-center gap-1 text-[#94A3B8] text-xs">
+                <span className="flex items-center gap-1 text-text-muted text-xs">
                   <Currency className="w-3 h-3" />
                   {opportunity.stipend}
                 </span>
               )}
             </div>
+            <div className="flex items-center gap-2 mt-1.5">
+              {opportunity.posted_at && (
+                <span className="text-text-muted text-[10px]">
+                  {getDaysAgo(opportunity.posted_at)}
+                </span>
+              )}
+              {opportunity.posted_at && isNew(opportunity.posted_at) && (
+                <span className="px-1.5 py-0.5 bg-success/20 text-success rounded text-[10px] font-semibold border border-success/30">
+                  NEW
+                </span>
+              )}
+            </div>
             {opportunity.eligibility && (
-              <div className="flex flex-wrap gap-1.5 mt-3">
+              <div className="flex flex-wrap gap-1.5 mt-2">
                 {opportunity.eligibility.split(",").map((e) => (
                   <span
                     key={e.trim()}
-                    className="px-2 py-0.5 bg-[#111827] rounded text-[#94A3B8] text-[10px]"
+                    className="px-2 py-0.5 bg-surface-elevated rounded text-text-muted text-[10px]"
                   >
                     {e.trim()}
                   </span>
                 ))}
               </div>
             )}
-            <div className="flex items-center justify-between mt-4">
+            <div className="flex items-center justify-between mt-3">
               {opportunity.deadline && <DeadlineCountdown deadline={opportunity.deadline} />}
-              {linkUnavailable ? (
-                <span className="text-amber-400 text-xs font-medium flex items-center gap-1">
-                  Visit Official Site
-                  <ExternalLink className="w-3 h-3" />
-                </span>
-              ) : (
-                <span className="text-[#00E5FF] text-xs font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  View Details
-                  <ExternalLink className="w-3 h-3" />
-                </span>
-              )}
+              <span className="text-accent text-xs font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                View Details
+                <ExternalLink className="w-3 h-3" />
+              </span>
             </div>
-            <div className="mt-3 pt-3 border-t border-[#1F2937]/50" onClick={(e) => e.preventDefault()}>
+            <div className="mt-3 pt-3 border-t border-border/50" onClick={(e) => e.preventDefault()}>
               <ShareButtons
                 title={opportunity.title}
                 organization={opportunity.organization}
