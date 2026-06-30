@@ -13,6 +13,7 @@ ElectroBridge is a one-stop aggregator platform for electronics and semiconducto
 | TypeScript | ^5 | Type safety |
 | Tailwind CSS | ^3.4.1 | Styling (dark theme) |
 | Supabase JS | ^2.108.2 | Database client |
+| @supabase/ssr | latest | Supabase SSR auth (middleware, client/server clients) |
 | PostgreSQL | (via Supabase) | Database |
 | PostCSS | ^8 | CSS processing |
 | Autoprefixer | ^10.5.2 | CSS vendor prefixes |
@@ -58,6 +59,8 @@ root/
 │   ├── .env.local.example              # Env var template
 │   ├── .eslintrc.json                  # ESLint config (next/core-web-vitals)
 │   ├── .gitignore
+│   ├── AUTH_SETUP.md                   # Supabase Auth setup guide
+│   ├── DASHBOARD_SUMMARY.md            # User Dashboard & Auth summary
 │   ├── DESIGN_SYSTEM.md                # Figma design tokens documentation
 │   ├── IMPLEMENTATION_PROGRESS.md       # UI refactor progress tracker
 │   ├── README.md                       # App README
@@ -80,7 +83,8 @@ root/
 │   │       ├── 20260501000002_verification_and_slugs.sql
 │   │       ├── 20260501000003_cleanup_irrelevant_news.sql
 │   │       ├── 20260501000004_ai_usage_log.sql
-│   │       └── 20260501000005_news_slug_suggestions.sql
+│   │       ├── 20260501000005_news_slug_suggestions.sql
+│   │       └── 20260630000001_user_profiles.sql
 │   ├── scripts/
 │   │   ├── supabase-setup.mjs          # Node.js Supabase DB setup script
 │   │   ├── test-scrapers.mjs           # Scraper test script
@@ -91,10 +95,14 @@ root/
 │   │   ├── next.svg                    # Next.js logo
 │   │   └── vercel.svg                  # Vercel logo
 │   └── src/
+│       ├── middleware.ts                # Supabase session refresh middleware
 │       ├── types/
 │       │   └── index.ts                # All TypeScript interfaces
 │       ├── lib/
 │       │   ├── supabase.ts             # Supabase client init
+│   │   ├── supabase/
+│   │   │   ├── client.ts             # Browser Supabase client (@supabase/ssr)
+│   │   │   └── server.ts             # Server Supabase client (cookies)
 │       │   ├── utils.ts                # Utility functions & constants
 │       │   ├── email-digest.ts         # Weekly email digest builder
 │       │   ├── rate-limiter.ts         # In-memory rate limiter
@@ -387,15 +395,71 @@ root/
 - `Anyone can insert suggestions` — FOR INSERT with check (true)
 - `Admin can read suggestions` — FOR SELECT using (true)
 
-### Table: `saved_opportunities` (referenced in types but no migration found)
-| Column | Type | Constraints |
-|--------|------|-------------|
-| id | uuid | PK |
-| user_id | string | |
-| opportunity_id | string | |
-| created_at | string | |
+### Table: `user_profiles` (added in migration 20260630000001)
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| id | uuid | PK, FK → auth.users(id) ON DELETE CASCADE | |
+| full_name | text | nullable | |
+| qualification | text | nullable | MSc, BTech, MTech, PhD, etc. |
+| specialization | text | nullable | thin film, VLSI, embedded… |
+| has_net | boolean | default false | NET qualified |
+| has_gate | boolean | default false | GATE qualified |
+| preferred_location | text | nullable | |
+| resume_ats_score | integer | default 0 | |
+| created_at | timestamptz | default now() | |
+| updated_at | timestamptz | default now() | |
 
-*Note: This table has TypeScript types defined but no migration or actual usage found. May be planned for future Supabase Auth integration.*
+**RLS Policies:**
+- `Users can view own profile` — FOR SELECT using (auth.uid() = id)
+- `Users can update own profile` — FOR UPDATE using (auth.uid() = id)
+- `Users can insert own profile` — FOR INSERT with check (auth.uid() = id)
+
+**Triggers:**
+- `on_auth_user_created` — AFTER INSERT ON auth.users → calls `handle_new_user()` which inserts basic profile with full_name from user_metadata
+
+### Table: `saved_opportunities` (added in migration 20260630000001)
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| id | uuid | PK, default gen_random_uuid() | |
+| user_id | uuid | FK → auth.users(id) ON DELETE CASCADE | |
+| opportunity_id | uuid | FK → opportunities(id) ON DELETE CASCADE | |
+| created_at | timestamptz | default now() | |
+| UNIQUE constraint | (user_id, opportunity_id) | Prevents duplicates | |
+
+**RLS Policies:**
+- `Users can view own saved` — FOR SELECT using (auth.uid() = user_id)
+- `Users can insert own saved` — FOR INSERT with check (auth.uid() = user_id)
+- `Users can delete own saved` — FOR DELETE using (auth.uid() = user_id)
+
+### Table: `applications` (added in migration 20260630000001)
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| id | uuid | PK, default gen_random_uuid() | |
+| user_id | uuid | FK → auth.users(id) ON DELETE CASCADE | |
+| opportunity_id | uuid | FK → opportunities(id) ON DELETE CASCADE | |
+| status | text | default 'applied', CHECK | applied / under_review / shortlisted / rejected / accepted |
+| applied_at | timestamptz | default now() | |
+| notes | text | nullable | |
+| updated_at | timestamptz | default now() | |
+
+**RLS Policies:**
+- `Users can view own applications` — FOR SELECT using (auth.uid() = user_id)
+- `Users can insert own applications` — FOR INSERT with check (auth.uid() = user_id)
+- `Users can update own applications` — FOR UPDATE using (auth.uid() = user_id)
+- `Users can delete own applications` — FOR DELETE using (auth.uid() = user_id)
+
+### Table: `user_alerts` (added in migration 20260630000001)
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| id | uuid | PK, default gen_random_uuid() | |
+| user_id | uuid | FK → auth.users(id) ON DELETE CASCADE | |
+| keywords | text[] | nullable | |
+| categories | text[] | nullable | |
+| is_active | boolean | default true | |
+| created_at | timestamptz | default now() | |
+
+**RLS Policies:**
+- `Users can manage own alerts` — FOR ALL using (auth.uid() = user_id)
 
 ---
 
@@ -482,8 +546,42 @@ root/
 - **File:** `src/app/about/page.tsx`
 - **Route:** `/about`
 - **Type:** Server component
-- **Data fetched:** None (static)
-- **Renders:** Mission, stats (hardcoded: 500+ opportunities, 50+ orgs, 1000+ news, 10K+ visitors), coverage cards (6), verification steps (4), FAQ (6 items), CTA. JSON-LD WebSite + FAQPage schema.
+- **Data fetched:** Real Supabase counts (active opportunities, distinct organizations, news articles)
+- **Renders:** Mission, stats (live DB counts), coverage cards (6), verification steps (4), FAQ (6 items), CTA. JSON-LD WebSite + FAQPage schema.
+
+### Login
+- **File:** `src/app/login/page.tsx`
+- **Route:** `/login`
+- **Type:** Client component
+- **Data fetched:** Posts to `supabase.auth.signInWithPassword()` or OAuth
+- **Renders:** Email/password form + "Sign in with Google" button. Figma dark theme card. Links to /signup. Toast errors on failure.
+
+### Signup
+- **File:** `src/app/signup/page.tsx`
+- **Route:** `/signup`
+- **Type:** Client component
+- **Data fetched:** Posts to `supabase.auth.signUp()` (email) or OAuth
+- **Renders:** Full name, email, password fields + "Sign up with Google". Shows "Check your email to confirm" success screen. Links to /login.
+
+### Dashboard
+- **File:** `src/app/dashboard/page.tsx`
+- **Route:** `/dashboard` (protected — redirects to /login if no session)
+- **Type:** Client component
+- **Data fetched:** saved_opportunities count, applications count + joined with opportunities, user_profiles (resume_ats_score), user_alerts count
+- **Renders:** 4 stat cards (Saved, Applications, Resume Score, Active Alerts), Application Tracker (left column), Resume Score circular progress + improvement tips (right), Upcoming Deadlines countdowns (right). "Build Resume" link to /profile.
+
+### Profile
+- **File:** `src/app/profile/page.tsx`
+- **Route:** `/profile` (protected — redirects to /login if no session)
+- **Type:** Client component
+- **Data fetched:** user_profiles by current user ID
+- **Renders:** Form with full_name, qualification (select), specialization, hasNET/GATE checkboxes, preferred_location. Upserts to user_profiles on save.
+
+### Auth Callback
+- **File:** `src/app/auth/callback/route.ts`
+- **Route:** `GET /auth/callback`
+- **Type:** Server component (API route)
+- **What it does:** Exchanges OAuth code for session via `supabase.auth.exchangeCodeForSession()`, redirects to /dashboard
 
 ### Contact
 - **File:** `src/app/contact/page.tsx`
@@ -749,14 +847,39 @@ root/
 - **What it does:** Finds opportunities with overlapping tags (tags overlap query), limit 3
 - **Response:** `{ opportunities: Opportunity[] }`
 
+### `GET /api/applications`
+- **File:** `src/app/api/applications/route.ts`
+- **Auth:** Supabase session (server-side cookie)
+- **What it does:** Lists current user's applications joined with opportunity data
+- **Response:** `{ applications: Application[] }`
+
+### `PATCH /api/applications`
+- **File:** `src/app/api/applications/route.ts`
+- **Auth:** Supabase session
+- **Body:** `{ id, status?, notes? }`
+- **What it does:** Updates application status or notes
+- **Response:** `{ success: true }`
+
+### `DELETE /api/applications`
+- **File:** `src/app/api/applications/route.ts`
+- **Auth:** Supabase session
+- **Body:** `{ id }`
+- **What it does:** Deletes an application
+- **Response:** `{ success: true }`
+
+### `POST /api/auth/signout`
+- **File:** `src/app/api/auth/signout/route.ts`
+- **What it does:** Calls `supabase.auth.signOut()`, redirects to `/`
+- **Response:** 302 redirect
+
 ---
 
 ## 6. Components
 
 ### `Navbar.tsx`
 - **Props:** none
-- **What it renders:** Sticky nav with logo, dropdown menus (Opportunities, Resources), direct links (News, Organizations, Find My Match, Ask AI, About), mobile full-screen hamburger menu. Uses hover-intent dropdowns with 150ms delay.
-- **Dependencies:** none (uses next/link, lucide-react)
+- **What it renders:** Sticky nav with logo, dropdown menus (Opportunities, Resources), direct links (Home, News, Find My Match, Ask AI, About), auth-aware right-side buttons. If logged out: Bell + Login outline + Sign Up cyan + Admin. If logged in: Bell + user avatar dropdown (Dashboard, Profile, Sign Out) + Admin. Mobile full-screen hamburger menu with auth state. Uses hover-intent dropdowns with 150ms delay.
+- **Dependencies:** supabase/client (auth), next/link, lucide-react
 
 ### `Footer.tsx`
 - **Props:** none
@@ -765,8 +888,9 @@ root/
 
 ### `OpportunityCard.tsx`
 - **Props:** `{ opportunity: Opportunity }`
-- **What it renders:** Card with org avatar (initials), title (clickable → detail page), org name (clickable → org page), verification badge, posted time, "NEW" badge, category badge, tags as pills, deadline countdown, bookmark button, share buttons. Link-unavailable cards show at 70% opacity.
-- **Dependencies:** CategoryBadge, DeadlineCountdown, ShareButtons, VerificationBadge, lib/utils (cn, getDaysAgo, isNew)
+- **What it renders:** Card with org avatar (initials), title (clickable → detail page), org name (clickable → org page), verification badge, posted time, "NEW" badge, category badge, tags as pills, deadline countdown, bookmark button (auth-aware), share buttons. Link-unavailable cards show at 70% opacity.
+- **Bookmark behavior:** Checks auth state on mount. If logged in: uses `saved_opportunities` table (inserts/deletes via RLS). If logged out: falls back to localStorage. Shows toast "Sign in to sync" for anonymous users.
+- **Dependencies:** supabase/client (auth), sonner (toast), CategoryBadge, DeadlineCountdown, ShareButtons, VerificationBadge, lib/utils (cn, getDaysAgo, isNew)
 
 ### `NewsCard.tsx`
 - **Props:** `{ article: NewsArticle }`
@@ -801,7 +925,8 @@ root/
 ### `ApplyButton.tsx`
 - **Props:** `{ applyLink: string, opportunityId: string, verificationStatus?: string, officialPageUrl?: string | null }`
 - **What it renders:** "Apply Now" button (tracks click via `/api/track-click`). If link_unavailable + officialPageUrl exists, shows amber "Visit Official Site →" instead.
-- **Dependencies:** lucide-react
+- **Application tracking:** Checks auth state on mount. If logged in, also inserts row into `applications` table with status='applied' (checks for existing row first to prevent duplicates).
+- **Dependencies:** supabase/client (auth), lucide-react
 
 ### `ShareButtons.tsx`
 - **Props:** `{ title: string, organization: string, deadline: string | null, opportunityUrl: string }`
@@ -953,11 +1078,11 @@ root/
 1. **`OPENAI_API_KEY` in .env.example/README but not used** — no OpenAI provider in providers.ts. Listed in README but dead env var.
 2. **`calendar_exports` table never written to** — TypeScript interface defined and migration exists, but calendar-export route only generates ICS without logging to the table.
 3. **`telegram_subscribers` table never written to** — Migration creates the table but no code inserts or reads from it.
-4. **`saved_opportunities` interface exists but no implementation** — TypeScript type defined but no tables, no mutations, no queries.
+4. ~~**`saved_opportunities` interface exists but no implementation** — TypeScript type defined but no tables, no mutations, no queries.~~ ✅ **FIXED**: `saved_opportunities` table created in migration 20260630000001 with RLS policies. Used by OpportunityCard bookmark (when logged in) and dashboard stat card.
 5. **Duplicate scrollbar CSS** in `globals.css` — the `*` scrollbar rules are written twice (lines 89-115 and 117-133).
 6. **`checkRateLimit` is in-memory only** — resets on server restart, no persistent storage. Rate limit resets if serverless function cold starts.
 7. **News dedup cleanup (`POST /api/cleanup-news`)** — keeps oldest duplicate by `created_at`. Should consider keeping newest article instead with the most metadata.
-8. **No Supabase Auth integration** — user-specific features (bookmarks, saved_opportunities) use localStorage instead of server-side auth.
+8. ~~**No Supabase Auth integration** — user-specific features (bookmarks, saved_opportunities) use localStorage instead of server-side auth.~~ ✅ **FIXED**: Full Supabase Auth integrated (email/password + Google OAuth). New tables: user_profiles, saved_opportunities, applications, user_alerts with RLS. Navbar is auth-aware. OpportunityCard bookmark uses Supabase when logged in (localStorage fallback). ApplyButton inserts into applications. Dashboard, Profile, Login, Signup pages built.
 9. ~~**DRDO scraper (`drdo-scraper.ts`)** — imported only via `govt-scraper.ts` which is only called from `scrape-jobs/route.ts`. The main `/api/scrape` endpoint does NOT include govt scrapers, only `scrapeAllOpportunities()` (which includes ISRO + CSIR scrapers but NOT DRDO).~~ ✅ **FIXED**: DRDO is now an explicit first-class source in `scrapeAllOpportunities()` (imported directly in `opportunity-scraper.ts`). Removed from `govt-scraper.ts` to prevent double-scraping. `/api/scrape-jobs` deprecated.
 
 ---
@@ -990,7 +1115,15 @@ root/
 - ✅ **ISR** — Detail pages revalidated (opps 3600s, news 1800s)
 - ✅ **Organization pages** — Per-org listing with counts
 - ✅ **Share buttons** — WhatsApp, Twitter, LinkedIn, Email
-- ✅ **Favorites/bookmarks** — localStorage-based bookmarking
+- ✅ **Favorites/bookmarks** — localStorage-based bookmarking with Supabase sync when logged in
+- ✅ **User authentication** — Email/password + Google OAuth via Supabase Auth
+- ✅ **User dashboard** — 4 stat cards (saved, applications, resume score, alerts), application tracker with status, resume score circular progress, upcoming deadlines
+- ✅ **User profile** — Full name, qualification, specialization, NET/GATE, preferred location with upsert
+- ✅ **Auth-aware bookmarking** — Uses saved_opportunities table when logged in, localStorage fallback when anonymous
+- ✅ **Application tracking** — Apply Now button inserts into applications table (deduped), tracked on dashboard
+- ✅ **Secured user data** — RLS policies on all auth tables ensure users can only access their own data
+- ✅ **Protected routes** — Dashboard and Profile redirect to /login if no session
+- ✅ **Sign out flow** — Clears session, redirects to home, Navbar updates immediately
 - ✅ **Figma-based UI redesign** — All 16 pages and components refactored to exact Figma specs (bg-primary #0A0E1A, surface #111827, accent #22D3EE, Space Grotesk + Inter typography)
 - ✅ **Deadline progress bar** — New `variant="progress"` with gradient urgency bar for detail pages
 - ✅ **Org-colored avatars** — Consistent color mapping per organization (ISRO, Intel, TIFR, Tata, DRDO)
@@ -998,16 +1131,15 @@ root/
 
 ### Partially implemented features
 - ⚠️ **CRM secret auth** — Used consistently but some endpoints lack proper error messages
-- ⚠️ **saved_opportunities** — TypeScript types exist but no table/functionality
+- ⚠️ **Admin auth is separate** — Admin uses NEXT_PUBLIC_ADMIN_PASSWORD env var, not Supabase Auth. Two separate auth systems coexist.
 - ⚠️ **telegram_subscribers** — Table exists but no subscription management UI
 - ⚠️ **Report analytics** — Reports stored but no admin review UI (is_resolved field exists)
 - ⚠️ **calendar_exports** — Migration creates table but it's never written to
 - ⚠️ **NVIDIA NIM** — Integration done but includes `OPENAI_API_KEY` in README that doesn't exist in code
 
 ### Planned/Referenced but not built
-- ❌ **Supabase Auth** — No user registration/login. Bookmarking uses localStorage instead of DB.
-- ❌ **Personalized recommendations** — No ML-based opportunity recommendations
-- ❌ **Job application tracking** — No way for users to track which jobs they've applied to
+- ❌ **Personalized recommendations** — No ML-based opportunity recommendations (beyond current AI match)
+- ❌ **Resume builder** — Placeholder in dashboard, no actual resume upload/builder yet
 - ❌ **Mobile app** — Web-only, no PWA manifest or service worker
 - ❌ **Multi-language support** — English only
 - ❌ **Advanced filtering** — No salary range filter, no date range filter
@@ -1115,6 +1247,42 @@ root/
 | File | Operation | Conditions |
 |------|-----------|------------|
 | `app/contact/page.tsx` | insert | New suggestion |
+
+### `user_profiles` table (new)
+
+| File | Operation | Conditions |
+|------|-----------|------------|
+| `app/dashboard/page.tsx` | select (single) | id = current user (resume_ats_score) |
+| `app/profile/page.tsx` | select (single) | id = current user |
+| `app/profile/page.tsx` | upsert | id = current user |
+| `app/match/page.tsx` | select (single) | id = current user (pre-fill form) |
+
+### `saved_opportunities` table (new)
+
+| File | Operation | Conditions |
+|------|-----------|------------|
+| `app/dashboard/page.tsx` | select (count, head) | user_id = current user |
+| `components/OpportunityCard.tsx` | select (maybeSingle) | user_id + opportunity_id (check bookmark status) |
+| `components/OpportunityCard.tsx` | insert | New bookmark |
+| `components/OpportunityCard.tsx` | delete | user_id + opportunity_id (remove bookmark) |
+
+### `applications` table (new)
+
+| File | Operation | Conditions |
+|------|-----------|------------|
+| `app/dashboard/page.tsx` | select (with join) | user_id = current user, joined with opportunities |
+| `app/dashboard/page.tsx` | select (count, head) | user_id = current user |
+| `components/ApplyButton.tsx` | select (maybeSingle) | user_id + opportunity_id (check duplicate) |
+| `components/ApplyButton.tsx` | insert | New application with status='applied' |
+| `app/api/applications/route.ts` | select (with join) | user_id = current user (GET) |
+| `app/api/applications/route.ts` | update | id + user_id (PATCH) |
+| `app/api/applications/route.ts` | delete | id + user_id (DELETE) |
+
+### `user_alerts` table (new)
+
+| File | Operation | Conditions |
+|------|-----------|------------|
+| `app/dashboard/page.tsx` | select (count, head) | user_id + is_active=true |
 
 ---
 
