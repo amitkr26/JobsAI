@@ -1,7 +1,11 @@
-import { FALLBACK_NEWS } from '@/data/news';
-
-export function generateStaticParams() {
-  return FALLBACK_NEWS.map((n) => ({ slug: String(n.id) }));
+export async function generateStaticParams() {
+  try {
+    const { api } = await import('@/lib/api');
+    const res = await api.news.list();
+    return (res.data || []).map((n: any) => ({ slug: String(n.slug || n.id) }));
+  } catch {
+    return [];
+  }
 }
 
 export default function NewsSlugLayout({ children }: { children: React.ReactNode }) {

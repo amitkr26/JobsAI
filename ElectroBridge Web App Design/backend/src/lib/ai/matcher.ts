@@ -12,6 +12,7 @@ export async function matchOpportunities(skills: string[], interests?: string[],
     .from("opportunities")
     .select("*")
     .eq("is_active", true)
+    .eq("verification_status", "verified")
     .limit(50);
 
   if (error) throw error;

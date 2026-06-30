@@ -10,6 +10,7 @@ organizationsRouter.get('/', requireDatabase, async (_req, res) => {
       .from('opportunities')
       .select('organization, org_slug')
       .eq('is_active', true)
+      .eq('verification_status', 'verified')
       .not('org_slug', 'is', null);
 
     if (error) throw error;
@@ -38,7 +39,8 @@ organizationsRouter.get('/:slug', requireDatabase, async (req, res) => {
       .from('opportunities')
       .select('*')
       .eq('org_slug', slug)
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .eq('verification_status', 'verified');
 
     if (error) throw error;
     res.json({ data, total: data?.length || 0 });

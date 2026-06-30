@@ -1,29 +1,52 @@
 'use client';
 
-import { useState } from 'react';
-import { Search, SlidersHorizontal, CheckCircle, Grid3X3, List, AlertCircle } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from 'react';
+import { Search, SlidersHorizontal, Grid3X3, List, AlertCircle, RefreshCw } from 'lucide-react';
 import { OpportunityCard } from '@/components/OpportunityCard';
-import { OPPORTUNITIES } from '@/data/opportunities';
+import { getOpportunities, OpportunityData } from '@/data/opportunities';
+import { useSearchParams } from 'next/navigation';
 
 const filters = {
   'Job Type': ['Internship', 'Full-time', 'Research Fellowship', 'PhD Scholarship', 'Trainee'],
   'Degree': ['B.Tech', 'M.Tech', 'PhD'],
   'Location': ['Bengaluru', 'Hyderabad', 'Mumbai', 'Pune', 'Delhi'],
-  'Stipend': ['< ₹25k', '₹25k–₹50k', '> ₹50k'],
 };
 
 export default function OpportunitiesPage() {
-  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const searchParams = useSearchParams();
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [search, setSearch] = useState('');
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [opportunities, setOpportunities] = useState<OpportunityData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = OPPORTUNITIES.filter((o) => {
-    if (verifiedOnly && !o.verified) return false;
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      try {
+        const params: Record<string, string> = {};
+        const categoryParam = searchParams.get('category');
+        if (categoryParam) {
+          params.category = categoryParam;
+        }
+        const data = await getOpportunities(Object.keys(params).length ? params : undefined);
+        setOpportunities(data);
+      } catch {
+        setOpportunities([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [searchParams]);
+
+  const filtered = opportunities.filter((o) => {
     if (search && !o.title.toLowerCase().includes(search.toLowerCase()) && !o.org.toLowerCase().includes(search.toLowerCase())) return false;
+    if (activeFilters.length > 0 && !activeFilters.includes(o.type)) return false;
     return true;
   });
+
+  const displayed = search || activeFilters.length > 0 ? filtered : opportunities;
 
   return (
     <div className="min-h-screen bg-[#0B1120]">
@@ -53,7 +76,6 @@ export default function OpportunitiesPage() {
                       }`}
                     >
                       {opt}
-                      {active && <CheckCircle size={13} />}
                     </button>
                   );
                 })}
@@ -76,16 +98,7 @@ export default function OpportunitiesPage() {
               />
             </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setVerifiedOnly(!verifiedOnly)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border transition-colors ${
-                  verifiedOnly
-                    ? 'bg-[#10B981]/10 text-[#10B981] border-[#10B981]/25'
-                    : 'text-[#94A3B8] border-[#1F2937] hover:text-white'
-                }`}
-              >
-                <CheckCircle size={13} /> Verified Only
-              </button>
+              {loading && <RefreshCw size={14} className="text-[#00E5FF] animate-spin" />}
               <div className="flex items-center border border-[#1F2937] rounded-xl overflow-hidden">
                 <button
                   onClick={() => setView('grid')}
@@ -105,7 +118,7 @@ export default function OpportunitiesPage() {
 
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-[#94A3B8]">
-              <span className="text-white font-semibold">{filtered.length}</span> opportunities found
+              <span className="text-white font-semibold">{displayed.length}</span> opportunities found
             </p>
             <select className="text-sm bg-[#111827] border border-[#1F2937] text-[#94A3B8] rounded-lg px-3 py-1.5 outline-none">
               <option>Sort: Deadline (Soonest)</option>
@@ -114,17 +127,24 @@ export default function OpportunitiesPage() {
             </select>
           </div>
 
-          <div className={view === 'grid' ? 'grid md:grid-cols-2 xl:grid-cols-3 gap-4' : 'space-y-3'}>
-            {filtered.map((opp) => (
-              <OpportunityCard key={opp.id} opp={opp} />
-            ))}
-            {filtered.length === 0 && (
-              <div className="col-span-3 text-center py-20">
-                <AlertCircle size={40} className="text-[#1F2937] mx-auto mb-3" />
-                <p className="text-[#94A3B8] text-sm">No opportunities match your filters</p>
-              </div>
-            )}
-          </div>
+          {loading ? (
+            <div className="text-center py-20">
+              <RefreshCw size={32} className="text-[#00E5FF] animate-spin mx-auto mb-3" />
+              <p className="text-[#94A3B8] text-sm">Loading opportunities...</p>
+            </div>
+          ) : (
+            <div className={view === 'grid' ? 'grid md:grid-cols-2 xl:grid-cols-3 gap-4' : 'space-y-3'}>
+              {displayed.map((opp) => (
+                <OpportunityCard key={opp.id} opp={opp} />
+              ))}
+              {displayed.length === 0 && (
+                <div className="col-span-3 text-center py-20">
+                  <AlertCircle size={40} className="text-[#1F2937] mx-auto mb-3" />
+                  <p className="text-[#94A3B8] text-sm">No opportunities match your filters</p>
+                </div>
+              )}
+            </div>
+          )}
         </main>
       </div>
     </div>

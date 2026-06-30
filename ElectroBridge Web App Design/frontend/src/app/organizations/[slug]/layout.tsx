@@ -1,8 +1,11 @@
-import { FALLBACK_OPPORTUNITIES } from '@/data/opportunities';
-
-export function generateStaticParams() {
-  const orgs = [...new Set(FALLBACK_OPPORTUNITIES.map((o) => o.org.split('—')[0].trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')))];
-  return orgs.map((slug) => ({ slug }));
+export async function generateStaticParams() {
+  try {
+    const { api } = await import('@/lib/api');
+    const res = await api.organizations.list();
+    return (res.data || []).map((o: any) => ({ slug: o.slug }));
+  } catch {
+    return [];
+  }
 }
 
 export default function OrganizationSlugLayout({ children }: { children: React.ReactNode }) {

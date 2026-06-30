@@ -1,18 +1,32 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Building2, MapPin, Calendar } from 'lucide-react';
-import { OPPORTUNITIES } from '@/data/opportunities';
-import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Building2, RefreshCw } from 'lucide-react';
+import { getOpportunities, OpportunityData } from '@/data/opportunities';
 import { OpportunityCard } from '@/components/OpportunityCard';
 
 export default function OrganizationDetailPage() {
+  const [orgOpps, setOrgOpps] = useState<OpportunityData[]>([]);
+  const [loading, setLoading] = useState(true);
   const params = useParams();
   const slug = params.slug as string;
   const orgName = slug.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 
-  const orgOpps = OPPORTUNITIES.filter((o) => o.org.toLowerCase().includes(orgName.toLowerCase()));
+  useEffect(() => {
+    async function load() {
+      try {
+        const all = await getOpportunities();
+        setOrgOpps(all.filter((o) => o.org.toLowerCase().includes(orgName.toLowerCase())));
+      } catch {
+        setOrgOpps([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [orgName]);
 
   return (
     <div className="min-h-screen bg-[#0B1120]">
@@ -35,17 +49,24 @@ export default function OrganizationDetailPage() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {orgOpps.map((opp) => (
-            <OpportunityCard key={opp.id} opp={opp} />
-          ))}
-          {orgOpps.length === 0 && (
-            <div className="col-span-3 text-center py-20">
-              <Building2 size={40} className="text-[#1F2937] mx-auto mb-3" />
-              <p className="text-[#94A3B8] text-sm">No opportunities found for this organization.</p>
-            </div>
-          )}
-        </div>
+        {loading ? (
+          <div className="text-center py-20">
+            <RefreshCw size={32} className="text-[#00E5FF] animate-spin mx-auto mb-3" />
+            <p className="text-[#94A3B8] text-sm">Loading opportunities...</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {orgOpps.map((opp) => (
+              <OpportunityCard key={opp.id} opp={opp} />
+            ))}
+            {orgOpps.length === 0 && (
+              <div className="col-span-3 text-center py-20">
+                <Building2 size={40} className="text-[#1F2937] mx-auto mb-3" />
+                <p className="text-[#94A3B8] text-sm">No opportunities found for this organization.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

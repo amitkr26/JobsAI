@@ -18,7 +18,7 @@ opportunitiesRouter.get('/', requireDatabase, async (req, res) => {
       .eq('is_active', true)
       .or(`deadline.gte.${today},deadline.is.null`);
 
-    if (verified === 'true') {
+    if (verified !== 'all') {
       query = query.eq('verification_status', 'verified');
     }
     if (category && category !== 'All') {
@@ -66,6 +66,7 @@ opportunitiesRouter.get('/:id', requireDatabase, async (req, res) => {
       .from('opportunities')
       .select('*')
       .eq('id', id)
+      .eq('verification_status', 'verified')
       .single();
 
     if (error) {

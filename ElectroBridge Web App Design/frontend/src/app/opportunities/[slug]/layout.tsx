@@ -1,7 +1,11 @@
-import { FALLBACK_OPPORTUNITIES } from '@/data/opportunities';
-
-export function generateStaticParams() {
-  return FALLBACK_OPPORTUNITIES.map((o) => ({ slug: String(o.id) }));
+export async function generateStaticParams() {
+  try {
+    const { api } = await import('@/lib/api');
+    const res = await api.opportunities.list({ verified: 'true' });
+    return (res.data || []).map((o: any) => ({ slug: String(o.id) }));
+  } catch {
+    return [];
+  }
 }
 
 export default function OpportunitySlugLayout({ children }: { children: React.ReactNode }) {

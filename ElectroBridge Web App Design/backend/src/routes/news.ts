@@ -11,6 +11,7 @@ newsRouter.get('/', requireDatabase, async (req, res) => {
     let query = supabase!
       .from('news_articles')
       .select('*', { count: 'exact' })
+      .eq('is_verified', true)
       .order('published_at', { ascending: false });
 
     if (search) {
@@ -51,6 +52,7 @@ newsRouter.get('/:slug', requireDatabase, async (req, res) => {
       .from('news_articles')
       .select('*')
       .eq('slug', slug)
+      .eq('is_verified', true)
       .single();
 
     if (error) {

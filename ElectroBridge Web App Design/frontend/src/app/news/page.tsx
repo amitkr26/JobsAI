@@ -1,16 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { NEWS_ITEMS } from '@/data/news';
+import { getNews, NewsData } from '@/data/news';
 
 const tabs = ['All', 'Semiconductor', 'VLSI', 'AI Chips', 'Research', 'India', 'Industry', 'Jobs'];
 
 export default function NewsPage() {
   const [active, setActive] = useState('All');
-  const filtered = active === 'All' ? NEWS_ITEMS : NEWS_ITEMS.filter((n) => n.category === active || n.tags.includes(active));
+  const [newsItems, setNewsItems] = useState<NewsData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getNews();
+        setNewsItems(data);
+      } catch {
+        setNewsItems([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const filtered = active === 'All' ? newsItems : newsItems.filter((n) => n.category === active || n.tags.includes(active));
 
   return (
     <div className="min-h-screen bg-[#0B1120]">
@@ -36,34 +53,45 @@ export default function NewsPage() {
           ))}
         </div>
 
-        <div className="space-y-4">
-          {(filtered.length ? filtered : NEWS_ITEMS).map((n) => (
-            <Link
-              key={n.id}
-              href={`/news/${n.id}`}
-              className="block bg-[#1A2438] border border-[#1F2937] rounded-2xl p-6 hover:border-[#00E5FF]/20 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_24px_rgba(0,0,0,0.3)]"
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-2.5 h-2.5 rounded-full mt-2 shrink-0" style={{ background: n.sourceColor }} />
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-xs font-semibold" style={{ color: n.sourceColor }}>{n.source}</span>
-                    <span className="text-xs text-[#94A3B8]">{n.time}</span>
-                    <Badge variant="gray" size="xs">{n.category}</Badge>
-                  </div>
-                  <h3 className="text-base font-semibold text-white mb-2 leading-snug">{n.headline}</h3>
-                  <p className="text-sm text-[#94A3B8] leading-relaxed mb-3">{n.summary}</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {n.tags.map((t) => (
-                      <Badge key={t} variant="default" size="xs">#{t}</Badge>
-                    ))}
+        {loading ? (
+          <div className="text-center py-20">
+            <RefreshCw size={32} className="text-[#00E5FF] animate-spin mx-auto mb-3" />
+            <p className="text-[#94A3B8] text-sm">Loading news...</p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-[#94A3B8] text-sm">No news articles found.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filtered.map((n) => (
+              <Link
+                key={n.id}
+                href={`/news/${n.id}`}
+                className="block bg-[#1A2438] border border-[#1F2937] rounded-2xl p-6 hover:border-[#00E5FF]/20 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_24px_rgba(0,0,0,0.3)]"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-2.5 h-2.5 rounded-full mt-2 shrink-0" style={{ background: n.sourceColor }} />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-xs font-semibold" style={{ color: n.sourceColor }}>{n.source}</span>
+                      <span className="text-xs text-[#94A3B8]">{n.time}</span>
+                      <Badge variant="gray" size="xs">{n.category}</Badge>
+                    </div>
+                    <h3 className="text-base font-semibold text-white mb-2 leading-snug">{n.headline}</h3>
+                    <p className="text-sm text-[#94A3B8] leading-relaxed mb-3">{n.summary}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {n.tags.map((t) => (
+                        <Badge key={t} variant="default" size="xs">#{t}</Badge>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <ExternalLink size={14} className="text-[#94A3B8] shrink-0 mt-1" />
-              </div>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

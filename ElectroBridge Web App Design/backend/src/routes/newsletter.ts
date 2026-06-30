@@ -12,8 +12,8 @@ newsletterRouter.get('/weekly-digest', requireDatabase, async (_req, res) => {
   try {
     const today = new Date().toISOString().split('T')[0];
     const [{ data: opportunities }, { data: newsArticles }] = await Promise.all([
-      supabase!.from('opportunities').select('title, organization, deadline, stipend').eq('is_active', true).gte('deadline', today).limit(20),
-      supabase!.from('news_articles').select('title, source').order('published_at', { ascending: false }).limit(20),
+      supabase!.from('opportunities').select('title, organization, deadline, stipend').eq('is_active', true).eq('verification_status', 'verified').gte('deadline', today).limit(20),
+      supabase!.from('news_articles').select('title, source').eq('is_verified', true).order('published_at', { ascending: false }).limit(20),
     ]);
 
     const digest = await generateWeeklyDigest(opportunities || [], newsArticles || []);
@@ -34,8 +34,8 @@ newsletterRouter.get('/send', requireDatabase, async (_req, res) => {
 
     const today = new Date().toISOString().split('T')[0];
     const [{ data: opportunities }, { data: newsArticles }] = await Promise.all([
-      supabase!.from('opportunities').select('title, organization, deadline, stipend').eq('is_active', true).gte('deadline', today).limit(20),
-      supabase!.from('news_articles').select('title, source').order('published_at', { ascending: false }).limit(20),
+      supabase!.from('opportunities').select('title, organization, deadline, stipend').eq('is_active', true).eq('verification_status', 'verified').gte('deadline', today).limit(20),
+      supabase!.from('news_articles').select('title, source').eq('is_verified', true).order('published_at', { ascending: false }).limit(20),
     ]);
 
     const digest = await generateWeeklyDigest(opportunities || [], newsArticles || []);

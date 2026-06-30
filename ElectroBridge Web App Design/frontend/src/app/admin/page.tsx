@@ -1,24 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Shield, Briefcase, Link, Flag, Bot, Search, Filter,
-  Plus, Eye, CheckCircle, Trash2,
+  Plus, Eye, CheckCircle, Trash2, RefreshCw,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { OPPORTUNITIES } from '@/data/opportunities';
+import { getOpportunities, OpportunityData } from '@/data/opportunities';
 
 const modules = ['Opportunities', 'Verification Queue', 'News', 'Reports', 'Analytics', 'AI Usage', 'Broken Links'];
 
-const adminStats = [
-  { icon: <Briefcase size={15} />, label: 'New Opportunities', value: '12', delta: 'today', color: '#00E5FF' },
-  { icon: <Link size={15} />, label: 'Broken Links', value: '3', color: '#EF4444' },
-  { icon: <Flag size={15} />, label: 'User Reports', value: '7', color: '#F59E0B' },
-  { icon: <Bot size={15} />, label: 'AI Requests (24h)', value: '1,847', delta: '+12%', color: '#10B981' },
-];
-
 export default function AdminPage() {
   const [activeModule, setActiveModule] = useState('Opportunities');
+  const [opportunities, setOpportunities] = useState<OpportunityData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getOpportunities();
+        setOpportunities(data);
+      } catch {
+        setOpportunities([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0B1120] flex">
@@ -62,13 +71,17 @@ export default function AdminPage() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
-          {adminStats.map((s) => (
+          {[
+            { icon: <Briefcase size={15} />, label: 'Verified Opportunities', value: String(opportunities.length), color: '#00E5FF' },
+            { icon: <Link size={15} />, label: 'Broken Links', value: 'N/A', color: '#EF4444' },
+            { icon: <Flag size={15} />, label: 'User Reports', value: 'N/A', color: '#F59E0B' },
+            { icon: <Bot size={15} />, label: 'AI Requests (24h)', value: 'N/A', color: '#10B981' },
+          ].map((s) => (
             <div key={s.label} className="bg-[#1A2438] border border-[#1F2937] rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: s.color + '18', color: s.color }}>
                   {s.icon}
                 </div>
-                {s.delta && <span className="text-[10px] font-semibold" style={{ color: s.color }}>{s.delta}</span>}
               </div>
               <p className="text-xl font-bold text-white">{s.value}</p>
               <p className="text-xs text-[#94A3B8] mt-0.5">{s.label}</p>
@@ -79,7 +92,7 @@ export default function AdminPage() {
         {/* Table */}
         <div className="bg-[#1A2438] border border-[#1F2937] rounded-2xl overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-[#1F2937]">
-            <h3 className="text-sm font-semibold text-white">Recent Submissions</h3>
+            <h3 className="text-sm font-semibold text-white">Verified Opportunities</h3>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2 px-3 py-1.5 bg-[#111827] border border-[#1F2937] rounded-lg">
                 <Search size={12} className="text-[#94A3B8]" />
@@ -90,53 +103,53 @@ export default function AdminPage() {
               </button>
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="border-b border-[#1F2937]">
-                <tr className="text-[#94A3B8] text-xs uppercase tracking-wider">
-                  {['Title', 'Organization', 'Type', 'Submitted', 'Status', 'Actions'].map((h) => (
-                    <th key={h} className="text-left px-5 py-3 font-medium">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#1F2937]">
-                {OPPORTUNITIES.map((opp) => (
-                  <tr key={opp.id} className="hover:bg-[#111827] transition-colors">
-                    <td className="px-5 py-3 text-white font-medium text-xs max-w-[180px] truncate">{opp.title}</td>
-                    <td className="px-5 py-3 text-[#94A3B8] text-xs">{opp.org.split('—')[0].trim()}</td>
-                    <td className="px-5 py-3"><Badge variant="gray" size="xs">{opp.type}</Badge></td>
-                    <td className="px-5 py-3 text-[#94A3B8] text-xs">{opp.deadline}</td>
-                    <td className="px-5 py-3">
-                      <Badge variant={opp.verified ? 'green' : 'yellow'} size="xs">
-                        {opp.verified ? 'Verified' : 'Pending'}
-                      </Badge>
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-2">
-                        <button className="p-1 rounded text-[#94A3B8] hover:text-[#00E5FF] transition-colors"><Eye size={13} /></button>
-                        <button className="p-1 rounded text-[#94A3B8] hover:text-[#10B981] transition-colors"><CheckCircle size={13} /></button>
-                        <button className="p-1 rounded text-[#94A3B8] hover:text-[#EF4444] transition-colors"><Trash2 size={13} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex items-center justify-between px-5 py-3 border-t border-[#1F2937]">
-            <p className="text-xs text-[#94A3B8]">Showing 6 of 4,200+ records</p>
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, '...', 420].map((p, i) => (
-                <button
-                  key={i}
-                  className={`px-2.5 py-1 rounded-lg text-xs transition-colors ${
-                    p === 1 ? 'bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/25' : 'text-[#94A3B8] hover:text-white'
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
+          {loading ? (
+            <div className="text-center py-12">
+              <RefreshCw size={24} className="text-[#00E5FF] animate-spin mx-auto" />
+              <p className="text-[#94A3B8] text-xs mt-2">Loading...</p>
             </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-[#1F2937]">
+                  <tr className="text-[#94A3B8] text-xs uppercase tracking-wider">
+                    {['Title', 'Organization', 'Type', 'Deadline', 'Status', 'Actions'].map((h) => (
+                      <th key={h} className="text-left px-5 py-3 font-medium">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1F2937]">
+                  {opportunities.map((opp) => (
+                    <tr key={opp.id} className="hover:bg-[#111827] transition-colors">
+                      <td className="px-5 py-3 text-white font-medium text-xs max-w-[180px] truncate">{opp.title}</td>
+                      <td className="px-5 py-3 text-[#94A3B8] text-xs">{opp.org.split('—')[0].trim()}</td>
+                      <td className="px-5 py-3"><Badge variant="gray" size="xs">{opp.type}</Badge></td>
+                      <td className="px-5 py-3 text-[#94A3B8] text-xs">{opp.deadline}</td>
+                      <td className="px-5 py-3">
+                        <Badge variant={opp.verified ? 'green' : 'yellow'} size="xs">
+                          {opp.verified ? 'Verified' : 'Pending'}
+                        </Badge>
+                      </td>
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-2">
+                          <button className="p-1 rounded text-[#94A3B8] hover:text-[#00E5FF] transition-colors"><Eye size={13} /></button>
+                          <button className="p-1 rounded text-[#94A3B8] hover:text-[#10B981] transition-colors"><CheckCircle size={13} /></button>
+                          <button className="p-1 rounded text-[#94A3B8] hover:text-[#EF4444] transition-colors"><Trash2 size={13} /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {opportunities.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="text-center py-12 text-[#94A3B8] text-xs">No opportunities found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <div className="flex items-center justify-between px-5 py-3 border-t border-[#1F2937]">
+            <p className="text-xs text-[#94A3B8]">Showing {opportunities.length} records</p>
           </div>
         </div>
       </div>

@@ -67,6 +67,7 @@ aiRouter.get('/search', requireDatabase, async (req, res) => {
       .from('opportunities')
       .select('*', { count: 'exact' })
       .eq('is_active', true)
+      .eq('verification_status', 'verified')
       .or(`deadline.gte.${today},deadline.is.null`);
 
     if (filters.category) query = query.eq('category', filters.category);

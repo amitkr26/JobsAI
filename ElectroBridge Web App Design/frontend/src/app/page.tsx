@@ -1,7 +1,10 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
-import { OPPORTUNITIES } from '@/data/opportunities';
-import { NEWS_ITEMS } from '@/data/news';
+import { getOpportunities } from '@/data/opportunities';
+import { getNews } from '@/data/news';
 import { LandingHero } from '@/components/LandingHero';
 import { OpportunityCard } from '@/components/OpportunityCard';
 
@@ -41,6 +44,27 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 export default function HomePage() {
+  const [opportunities, setOpportunities] = useState<any[]>([]);
+  const [newsItems, setNewsItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [opps, news] = await Promise.all([
+          getOpportunities({ is_featured: 'true' }),
+          getNews(),
+        ]);
+        setOpportunities(opps);
+        setNewsItems(news);
+      } catch {
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#0B1120]">
       <LandingHero />
@@ -95,11 +119,17 @@ export default function HomePage() {
               View all <ChevronRight size={14} />
             </Link>
           </div>
-          <div className="grid md:grid-cols-3 gap-4">
-            {OPPORTUNITIES.slice(0, 3).map((opp) => (
-              <OpportunityCard key={opp.id} opp={opp} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center py-12 text-[#94A3B8]">Loading opportunities...</div>
+          ) : opportunities.length === 0 ? (
+            <div className="text-center py-12 text-[#94A3B8]">No featured opportunities available. Check back soon.</div>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-4">
+              {opportunities.slice(0, 3).map((opp) => (
+                <OpportunityCard key={opp.id} opp={opp} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -115,27 +145,33 @@ export default function HomePage() {
               All news <ChevronRight size={14} />
             </Link>
           </div>
-          <div className="space-y-3">
-            {NEWS_ITEMS.slice(0, 3).map((n) => (
-              <Link
-                key={n.id}
-                href={`/news/${n.id}`}
-                className="block bg-[#1A2438] border border-[#1F2937] rounded-xl p-4 hover:border-[#00E5FF]/20 transition-colors cursor-pointer"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ background: n.sourceColor }} />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-medium" style={{ color: n.sourceColor }}>{n.source}</span>
-                      <span className="text-xs text-[#94A3B8]">{n.time}</span>
+          {loading ? (
+            <div className="text-center py-12 text-[#94A3B8]">Loading news...</div>
+          ) : newsItems.length === 0 ? (
+            <div className="text-center py-12 text-[#94A3B8]">No news articles available. Check back soon.</div>
+          ) : (
+            <div className="space-y-3">
+              {newsItems.slice(0, 3).map((n) => (
+                <Link
+                  key={n.id}
+                  href={`/news/${n.id}`}
+                  className="block bg-[#1A2438] border border-[#1F2937] rounded-xl p-4 hover:border-[#00E5FF]/20 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ background: n.sourceColor }} />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-medium" style={{ color: n.sourceColor }}>{n.source}</span>
+                        <span className="text-xs text-[#94A3B8]">{n.time}</span>
+                      </div>
+                      <h4 className="text-sm font-semibold text-white mb-1">{n.headline}</h4>
+                      <p className="text-xs text-[#94A3B8] leading-relaxed">{n.summary}</p>
                     </div>
-                    <h4 className="text-sm font-semibold text-white mb-1">{n.headline}</h4>
-                    <p className="text-xs text-[#94A3B8] leading-relaxed">{n.summary}</p>
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
