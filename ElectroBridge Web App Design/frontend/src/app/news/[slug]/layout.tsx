@@ -1,11 +1,12 @@
 export async function generateStaticParams() {
-  try {
-    const { api } = await import('@/lib/api');
-    const res = await api.news.list();
-    return (res.data || []).map((n: any) => ({ slug: String(n.slug || n.id) }));
-  } catch {
-    return [];
-  }
+  const slugs = [
+    'india-semiconductor-mission-incentive',
+    'isro-chandrayaan-4-cabinet-approval',
+    'iisc-cryogenic-quantum-processor',
+    'drdo-hypersonic-scramjet-test',
+    'iit-bombay-intel-ai-research-lab',
+  ];
+  return slugs.map((slug) => ({ slug }));
 }
 
 export default function NewsSlugLayout({ children }: { children: React.ReactNode }) {
