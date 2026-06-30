@@ -1,4 +1,4 @@
-name: Deploy to Vercel
+name: Deploy Frontend to Netlify
 
 on:
   push:
@@ -7,15 +7,36 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ElectroBridge Web App Design/frontend
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: --prod
-          working-directory: ./electrobridge
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ElectroBridge Web App Design/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static export
+        run: npm run build
+
+      - name: Deploy to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          cd out && zip -r /tmp/deploy.zip . && cd ..
+          DEPLOY_ID=$(curl -s -X POST "https://api.netlify.com/api/v1/sites/${{ secrets.NETLIFY_SITE_ID }}/deploys" \
+            -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+            -H "Content-Type: application/zip" \
+            --data-binary @/tmp/deploy.zip | python3 -c "import sys,json; print(json.load(sys.stdin).get('id'))")
+          echo "Deploy ID: $DEPLOY_ID"
+          sleep 5
+          curl -s -X POST "https://api.netlify.com/api/v1/sites/${{ secrets.NETLIFY_SITE_ID }}/deploys/$DEPLOY_ID/restore" \
+            -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN"
