@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Zap, Menu, X, ChevronDown, Home, Briefcase, Newspaper, Crosshair, Bot, Info, Bell } from "lucide-react";
+import { Zap, Menu, X, ChevronDown, Home, Briefcase, Newspaper, Crosshair, Bot, Info, Bell, User, LogOut, LayoutDashboard } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 const OPPORTUNITY_LINKS = [
   { href: "/category/jrf", label: "JRF Positions" },
@@ -33,9 +36,13 @@ const NAV_ITEMS = [
 ];
 
 export default function Navbar() {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   const showDropdown = (name: string) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -49,9 +56,27 @@ export default function Navbar() {
   };
 
   useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) setUser(data.user);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
     return () => {
+      listener?.subscription.unsubscribe();
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -62,6 +87,24 @@ export default function Navbar() {
     }
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
+    setUserDropdownOpen(false);
+    router.push("/");
+    router.refresh();
+  };
+
+  const getInitials = (name?: string | null, email?: string) => {
+    if (name) {
+      return name.split(" ").map((w) => w[0]).join("").substring(0, 2).toUpperCase();
+    }
+    return email?.substring(0, 2).toUpperCase() ?? "U";
+  };
+
+  const userDisplayName = user?.user_metadata?.full_name || user?.email || "User";
 
   return (
     <nav className="bg-bg-primary/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
@@ -176,12 +219,64 @@ export default function Navbar() {
             <button className="w-9 h-9 rounded-lg bg-surface-elevated/50 border border-border flex items-center justify-center text-text-secondary hover:text-accent hover:border-accent/30 transition-all">
               <Bell className="w-4 h-4" />
             </button>
-            <Link
-              href="/dashboard"
-              className="px-3 py-2 text-sm font-medium text-text-secondary border border-border rounded-lg hover:text-text-primary hover:border-accent/30 transition-all"
-            >
-              Dashboard
-            </Link>
+            {user ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-secondary border border-border rounded-lg hover:text-accent hover:border-accent/30 transition-all"
+                >
+                  <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center">
+                    <span className="text-accent text-xs font-bold">
+                      {getInitials(user.user_metadata?.full_name, user.email)}
+                    </span>
+                  </div>
+                  <span className="max-w-[100px] truncate">{userDisplayName}</span>
+                </button>
+                {userDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-1 w-48 bg-surface border border-border rounded-xl shadow-card-dark py-2 z-50">
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:text-accent hover:bg-accent/10 transition-all"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      Dashboard
+                    </Link>
+                    <Link
+                      href="/profile"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-text-secondary hover:text-accent hover:bg-accent/10 transition-all"
+                    >
+                      <User className="w-4 h-4" />
+                      Profile
+                    </Link>
+                    <div className="border-t border-border my-1" />
+                    <button
+                      onClick={handleSignOut}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-danger hover:bg-danger/10 transition-all w-full text-left"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-3 py-2 text-sm font-medium text-text-secondary border border-border rounded-lg hover:text-text-primary hover:border-accent/30 transition-all"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  className="px-3 py-2 text-sm font-medium bg-accent text-bg-primary rounded-lg hover:bg-accent-hover transition-all"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
             <Link
               href="/admin"
               className="px-3 py-2 text-sm font-medium bg-accent text-bg-primary rounded-lg hover:bg-accent-hover transition-all"
@@ -248,6 +343,58 @@ export default function Navbar() {
 
             <div className="border-t border-border/50 my-4" />
 
+            {user ? (
+              <div className="space-y-1">
+                <div className="flex items-center gap-3 px-3 py-3 text-text-primary text-sm font-medium">
+                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+                    <span className="text-accent text-sm font-bold">
+                      {getInitials(user.user_metadata?.full_name, user.email)}
+                    </span>
+                  </div>
+                  {userDisplayName}
+                </div>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2 border border-border text-text-secondary font-semibold rounded-lg px-4 py-3 text-sm hover:text-text-primary transition-all w-full"
+                >
+                  <LayoutDashboard className="w-5 h-5" />
+                  Dashboard
+                </Link>
+                <Link
+                  href="/profile"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2 text-text-secondary font-semibold rounded-lg px-4 py-3 text-sm hover:text-text-primary transition-all w-full"
+                >
+                  <User className="w-5 h-5" />
+                  Profile
+                </Link>
+                <button
+                  onClick={() => { handleSignOut(); setMenuOpen(false); }}
+                  className="flex items-center gap-2 text-danger font-semibold rounded-lg px-4 py-3 text-sm hover:bg-danger/10 transition-all w-full"
+                >
+                  <LogOut className="w-5 h-5" />
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <Link
+                  href="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2 border border-border text-text-secondary font-semibold rounded-lg px-4 py-3 text-sm hover:text-text-primary transition-all w-full"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2 bg-accent text-bg-primary font-semibold rounded-lg px-4 py-3 text-sm hover:bg-accent-hover transition-all w-full"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
             <Link
               href="/admin"
               onClick={() => setMenuOpen(false)}
@@ -255,13 +402,6 @@ export default function Navbar() {
             >
               <Zap className="w-4 h-4" />
               Admin Panel
-            </Link>
-            <Link
-              href="/dashboard"
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 border border-border text-text-secondary font-semibold rounded-lg px-4 py-3 text-sm hover:text-text-primary transition-all"
-            >
-              Dashboard
             </Link>
           </div>
         </div>
