@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Home, Briefcase, Newspaper, Bot, Users, FileText,
+  Home, Briefcase, Newspaper, Bot, FileText,
   Bell, User, CircuitBoard, Menu, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,6 @@ const navItems = [
   { label: 'Opportunities', href: '/opportunities', icon: <Briefcase size={15} /> },
   { label: 'News', href: '/news', icon: <Newspaper size={15} /> },
   { label: 'AI Assistant', href: '/chat', icon: <Bot size={15} /> },
-  { label: 'Community', href: '/community', icon: <Users size={15} /> },
   { label: 'Resume', href: '/resume', icon: <FileText size={15} /> },
 ];
 

@@ -1,17 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useParams, notFound } from 'next/navigation';
+import { useSearchParams, notFound } from 'next/navigation';
 import { ChevronRight, ExternalLink, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getNewsArticle, NewsData } from '@/data/news';
 
-export default function NewsDetailPage() {
+function DetailContent() {
   const [article, setArticle] = useState<NewsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const params = useParams();
-  const slug = (params.slug as string) || '';
+  const searchParams = useSearchParams();
+  const slug = searchParams.get('slug') || '';
 
   useEffect(() => {
     async function load() {
@@ -25,7 +25,8 @@ export default function NewsDetailPage() {
         setLoading(false);
       }
     }
-    load();
+    if (slug) load();
+    else setLoading(false);
   }, [slug]);
 
   if (loading) {
@@ -72,5 +73,18 @@ export default function NewsDetailPage() {
         </article>
       </div>
     </div>
+  );
+}
+
+export default function NewsDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0B1120] flex items-center justify-center">
+        <RefreshCw size={32} className="text-[#00E5FF] animate-spin mx-auto mb-3" />
+        <p className="text-[#94A3B8] text-sm">Loading...</p>
+      </div>
+    }>
+      <DetailContent />
+    </Suspense>
   );
 }

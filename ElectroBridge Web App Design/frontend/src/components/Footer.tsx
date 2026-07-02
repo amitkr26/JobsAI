@@ -8,7 +8,6 @@ const footerSections = [
       { label: 'Opportunities', href: '/opportunities' },
       { label: 'News', href: '/news' },
       { label: 'AI Assistant', href: '/chat' },
-      { label: 'Community', href: '/community' },
     ],
   },
   {

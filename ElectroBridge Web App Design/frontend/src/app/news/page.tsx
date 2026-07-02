@@ -67,7 +67,7 @@ export default function NewsPage() {
             {filtered.map((n) => (
               <Link
                 key={n.id}
-                href={`/news/${n.id}`}
+                href={`/news/detail?slug=${n.slug}`}
                 className="block bg-[#1A2438] border border-[#1F2937] rounded-2xl p-6 hover:border-[#00E5FF]/20 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_24px_rgba(0,0,0,0.3)]"
               >
                 <div className="flex items-start gap-3">

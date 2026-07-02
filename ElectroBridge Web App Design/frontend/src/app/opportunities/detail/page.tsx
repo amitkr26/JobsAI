@@ -1,31 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useParams, notFound } from 'next/navigation';
+import { useSearchParams, notFound } from 'next/navigation';
 import {
-  ChevronRight, MapPin, Zap, Clock, ExternalLink, Bookmark, Share2,
-  Flag, Bot, CheckCircle, Award, ThumbsUp, MessageCircle, RefreshCw,
+  ChevronRight, MapPin, Zap, Clock, RefreshCw,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AvatarCircle } from '@/components/AvatarCircle';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { getOpportunities, getOpportunity, OpportunityData } from '@/data/opportunities';
 
-export default function OpportunityDetailPage() {
-  const [saved, setSaved] = useState(false);
+function DetailContent() {
   const [opp, setOpp] = useState<OpportunityData | null>(null);
   const [related, setRelated] = useState<OpportunityData[]>([]);
   const [loading, setLoading] = useState(true);
-  const params = useParams();
-  const slug = (params.slug as string) || '';
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id') || '';
 
   useEffect(() => {
     async function load() {
       setLoading(true);
       try {
         const [current, all] = await Promise.all([
-          getOpportunity(slug),
+          getOpportunity(id),
           getOpportunities(),
         ]);
         if (!current) return;
@@ -36,8 +34,9 @@ export default function OpportunityDetailPage() {
         setLoading(false);
       }
     }
-    load();
-  }, [slug]);
+    if (id) load();
+    else setLoading(false);
+  }, [id]);
 
   if (loading) {
     return (
@@ -62,7 +61,6 @@ export default function OpportunityDetailPage() {
         </Link>
 
         <div className="flex flex-col lg:flex-row gap-7">
-          {/* Main content */}
           <div className="flex-1 min-w-0">
             <div className="bg-[#1A2438] border border-[#1F2937] rounded-2xl p-7 mb-5">
               <div className="flex items-start gap-4 mb-5">
@@ -118,33 +116,20 @@ export default function OpportunityDetailPage() {
             )}
           </div>
 
-          {/* Right panel */}
           <div className="lg:w-80 shrink-0">
             <div className="sticky top-20 space-y-4">
               <div className="bg-[#1A2438] border border-[#1F2937] rounded-2xl p-5">
                 <a href="#" className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#00E5FF] text-[#0B1120] font-semibold text-sm hover:bg-[#00E5FF]/90 transition-all shadow-[0_0_24px_rgba(0,229,255,0.2)] mb-3">
-                  <ExternalLink size={15} /> Apply Now
+                  Apply Now
                 </a>
-                <div className="flex gap-2">
-                  <button onClick={() => setSaved(!saved)} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-sm font-medium transition-colors ${saved ? 'bg-[#00E5FF]/10 border-[#00E5FF]/25 text-[#00E5FF]' : 'border-[#1F2937] text-[#94A3B8] hover:text-white'}`}>
-                    <Bookmark size={14} fill={saved ? 'currentColor' : 'none'} /> {saved ? 'Saved' : 'Save'}
-                  </button>
-                  <button className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-[#1F2937] text-sm font-medium text-[#94A3B8] hover:text-white transition-colors">
-                    <Share2 size={14} /> Share
-                  </button>
-                </div>
-                <button className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs text-[#94A3B8] hover:text-[#EF4444] transition-colors mt-2">
-                  <Flag size={12} /> Report Issue
-                </button>
               </div>
 
-              {/* Related */}
               {related.length > 0 && (
                 <div className="bg-[#1A2438] border border-[#1F2937] rounded-2xl p-5">
                   <h4 className="text-sm font-semibold text-white mb-3">Related Opportunities</h4>
                   <div className="space-y-3">
                     {related.map((o) => (
-                      <Link key={o.id} href={`/opportunities/${o.id}`} className="flex items-start gap-2 group">
+                      <Link key={o.id} href={`/opportunities/detail?id=${o.id}`} className="flex items-start gap-2 group">
                         <AvatarCircle initials={o.logo} color={o.color} />
                         <div>
                           <p className="text-xs font-semibold text-white group-hover:text-[#00E5FF] transition-colors leading-snug">{o.title}</p>
@@ -160,5 +145,18 @@ export default function OpportunityDetailPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OpportunityDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0B1120] flex items-center justify-center">
+        <RefreshCw size={32} className="text-[#00E5FF] animate-spin mx-auto mb-3" />
+        <p className="text-[#94A3B8] text-sm">Loading...</p>
+      </div>
+    }>
+      <DetailContent />
+    </Suspense>
   );
 }

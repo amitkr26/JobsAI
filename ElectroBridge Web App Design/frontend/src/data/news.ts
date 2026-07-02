@@ -2,6 +2,7 @@ import { api } from '@/lib/api';
 
 export interface NewsData {
   id: number;
+  slug: string;
   source: string;
   sourceColor: string;
   time: string;
@@ -25,6 +26,7 @@ export async function getNews(params?: Record<string, string>): Promise<NewsData
   const res = await api.news.list(params);
   return (res.data || []).map((n: any) => ({
     id: n.id || parseInt(n.slug || '0'),
+    slug: n.slug || String(n.id),
     source: n.source || 'Unknown',
     sourceColor: SOURCE_COLORS[n.source] || SOURCE_COLORS.default,
     time: n.published_at ? timeAgo(new Date(n.published_at)) : 'Recently',
@@ -41,6 +43,7 @@ export async function getNewsArticle(slug: string): Promise<NewsData | null> {
   if (!n) return null;
   return {
     id: n.id || parseInt(n.slug || '0'),
+    slug: n.slug || String(n.id),
     source: n.source || 'Unknown',
     sourceColor: SOURCE_COLORS[n.source] || SOURCE_COLORS.default,
     time: n.published_at ? timeAgo(new Date(n.published_at)) : 'Recently',

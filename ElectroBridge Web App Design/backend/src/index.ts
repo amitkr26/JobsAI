@@ -9,7 +9,6 @@ import { adminRouter } from './routes/admin.js';
 import { aiRouter } from './routes/ai.js';
 import { organizationsRouter } from './routes/organizations.js';
 import { isConfigured } from './lib/supabase.js';
-import { checkConnection } from './lib/neon.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '4000', 10);
@@ -19,12 +18,10 @@ app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/health', async (_req, res) => {
-  const supabaseOk = isConfigured;
-  const neonOk = await checkConnection();
   res.json({
-    status: supabaseOk && neonOk ? 'healthy' : 'degraded',
+    status: isConfigured ? 'healthy' : 'degraded',
     timestamp: new Date().toISOString(),
-    services: { supabase: supabaseOk, neon: neonOk },
+    services: { supabase: isConfigured },
   });
 });
 

@@ -108,7 +108,7 @@ export default function HomePage() {
               {newsItems.slice(0, 3).map((n) => (
                 <Link
                   key={n.id}
-                  href={`/news/${n.id}`}
+                  href={`/news/detail?slug=${n.slug}`}
                   className="block bg-[#1A2438] border border-[#1F2937] rounded-xl p-4 hover:border-[#00E5FF]/20 transition-colors cursor-pointer"
                 >
                   <div className="flex items-start gap-3">

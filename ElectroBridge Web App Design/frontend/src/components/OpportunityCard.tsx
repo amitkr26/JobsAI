@@ -17,7 +17,7 @@ export function OpportunityCard({ opp }: OpportunityCardProps) {
 
   return (
     <Link
-      href={`/opportunities/${opp.id}`}
+      href={`/opportunities/detail?id=${opp.id}`}
       className="group bg-[#1A2438] border border-[#1F2937] rounded-2xl p-5 cursor-pointer transition-all duration-200 hover:border-[#00E5FF]/30 hover:shadow-[0_0_24px_rgba(0,229,255,0.08)] hover:-translate-y-0.5 relative overflow-hidden block"
     >
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#00E5FF]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

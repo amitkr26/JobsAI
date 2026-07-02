@@ -13,7 +13,7 @@
 |-------|-------|---------|
 | Frontend | Next.js 15, Tailwind CSS v4, static export | Netlify |
 | Backend | Express 5, `npx tsx` runtime | Render (Free, Oregon) |
-| Database | Supabase (primary) + Neon (analytics) | Supabase Cloud + Neon Cloud |
+| Database | Supabase (primary) | Supabase Cloud |
 | Auth | Supabase Auth | Supabase |
 | AI | Groq LLaMA 3.3 70B (single provider) | External API |
 
@@ -60,10 +60,10 @@
 | Tailwind CSS v4 | ✅ | |
 | Landing page | ✅ | Hero, real API-fetched stats, featured opps, news, AI CTA |
 | Opportunities list | ✅ | API-fetched, paginated, filters |
-| Opportunity detail | ✅ | 5 UUIDs pre-built via generateStaticParams |
+| Opportunity detail | ✅ | Query-param `?id=` — works for any record without rebuild |
 | News list | ✅ | Category pill tabs, API-fetched |
-| News detail | ✅ | 5 slugs pre-built |
-| Organizations detail | ✅ | 5 orgs pre-built |
+| News detail | ✅ | Query-param `?slug=` — works for any record without rebuild |
+| Organizations detail | ✅ | SSG with 5 orgs via generateStaticParams |
 | AI Chat | ✅ | Real API call to Groq via `/api/ai/chat` |
 | AI Match | ✅ | Skill input + matching |
 | Resume page | ✅ | Empty defaults, live ATS preview |
@@ -82,8 +82,7 @@
 | Component | Status | Details |
 |-----------|--------|---------|
 | Supabase project | ✅ | Live, 12+ tables, RLS enabled |
-| Neon database | ✅ | Live, 5 analytics tables |
-| Render backend | ✅ | Deployed, healthy (supabase:true, neon:true) |
+| Render backend | ✅ | Deployed, healthy (supabase:true) |
 | GitHub Actions CI | ✅ | Lint + build on push to main |
 | GitHub Actions Deploy | ✅ | Build → zip → POST to Netlify (token DENIED) |
 | GitHub Actions Keep-Alive | ✅ | Pings Render `/health` every 10 min |
@@ -118,7 +117,6 @@
 | Netlify CD deploy token denied | 🔴 HIGH | `nfp_` token returns 401; CD pipeline broken |
 | Fork push broken | 🔴 HIGH | `pogotunes/JobsAI` push 403 — PAT expired |
 | No automated deploys | 🟡 MED | Need working deploy token |
-| Frontend detail pages fragile | 🟡 MED | Pre-built UUIDs only; new DB records = no detail pages until rebuild |
 
 ### 3.2 Medium Priority
 | Item | Priority | Notes |
@@ -127,7 +125,7 @@
 | All user tables empty | 🟡 MED | Zero real users, profiles, saves, or applications |
 | No cron infrastructure | 🟡 MED | Scrapers, newsletter, expiry checker removed; data added manually |
 | No email delivery | 🟡 MED | No cron triggers newsletter; subscribes stored to DB only |
-| No analytics data | 🟡 MED | Neon tables all zero — no monitoring possible |
+| No monitoring infrastructure | 🟡 MED | No analytics — no monitoring possible |
 | No link checking | 🟡 MED | Links never verified |
 | No AI usage monitoring | 🟡 MED | `ai_usage_log` empty |
 | Two codebases diverging | 🟡 MED | `electrobridge/` (legacy) vs `ElectroBridge Web App Design/` (active) |
@@ -169,14 +167,14 @@
 │  │                                              │       │
 │  │  AI: Groq (single provider, no fallback)     │       │
 │  │  No scrapers, no cron, no newsletter routes  │       │
-│  └────┬────────────────────┬────────────────────┘       │
-│       │                    │                              │
-│       ▼                    ▼                              │
-│  ┌──────────────┐    ┌──────────────┐                   │
-│  │  Supabase    │    │  Neon        │                   │
-│  │  (primary)   │    │  (analytics) │                   │
-│  │  12+ tables  │    │  5 tables    │                   │
-│  └──────────────┘    └──────────────┘                   │
+│  └──────────────────┬──────────────────────────┘       │
+│                     │                                    │
+│                     ▼                                    │
+│              ┌──────────────┐                           │
+│              │  Supabase    │                           │
+│              │  (primary)   │                           │
+│              │  12+ tables  │                           │
+│              └──────────────┘                           │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -253,7 +251,6 @@
 | Frontend | ✅ LIVE | `https://electrobridge.netlify.app` |
 | Backend | ✅ LIVE | `https://electrobridge-api.onrender.com` (health: OK) |
 | Supabase | ✅ LIVE | Project active, tables exist |
-| Neon | ✅ LIVE | Connected via DATABASE_URL |
 | CI | ✅ Configured | GitHub Actions: lint + build on push |
 | CD | ❌ BROKEN | Netlify deploy token returns 401 |
 | Keep-Alive | ✅ Configured | GitHub Actions cron pings /health every 10 min |
@@ -261,11 +258,11 @@
 ### Health Check
 ```json
 GET /health → 200
-{"status":"healthy","services":{"supabase":true,"neon":true}}
+{"status":"healthy","services":{"supabase":true}}
 ```
 
 ### Environment Variables (on Render)
-`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, `GROQ_API_KEY`, `ADMIN_PASSWORD`, `CORS_ORIGIN`
+`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`, `ADMIN_PASSWORD`, `CORS_ORIGIN`
 
 ---
 
@@ -281,7 +278,7 @@ GET /health → 200
 │   │   └── src/lib/                      API client, utils
 │   ├── backend/                          Express 5, 6 route modules
 │   │   ├── src/routes/                   6 routers
-│   │   ├── src/lib/                      Supabase, Neon, Groq, matcher
+│   │   ├── src/lib/                      Supabase, Groq, matcher
 │   │   └── src/middleware/               Admin auth, DB guard
 │   ├── shared/                           Types, constants
 │   └── documents/                        16 design/deployment docs
@@ -295,10 +292,10 @@ GET /health → 200
 | Area | Files |
 |------|-------|
 | Backend (routes) | 6 |
-| Backend (lib) | 6 (supabase, neon, groq, matcher, search-parser, summarizer) |
+| Backend (lib) | 5 (supabase, groq, matcher, search-parser, summarizer) |
 | Backend (middleware) | 2 (admin auth, DB guard) |
 | Frontend (pages) | 17 |
-| Frontend (components) | 7 |
+| Frontend (components) | 6 |
 | Frontend (data/lib) | 4 |
 | Shared | 2 |
 | Documentation | 16 |
@@ -314,13 +311,27 @@ GET /health → 200
 | Netlify token denied | 🔴 BLOCKER | Generate new `nfp_` token or enable auto-deploy from GitHub |
 | Fork push 403 | 🔴 BLOCKER | Replace PAT; origin pushes work |
 | Render tsc build fails | 🟡 WORKAROUND | Using `npx tsx` — works but non-standard |
-| generateStaticParams hardcoded UUIDs | 🟡 FRAGILE | Rebuild needed when DB records change |
 | No package-lock.json in frontend | 🟡 RISK | Run `npm install --package-lock-only` |
 | Netlify CD pipeline broken | 🟡 RISK | Must deploy manually via CLI or zip upload |
 
 ---
 
-## 10. Immediate Next Steps
+## 10. Session Changes (July 2, 2026)
+
+| Change | Details |
+|--------|---------|
+| Detail pages refactored | opportunities → `detail?id=`, news → `detail?slug=` (no more `[slug]` routes) |
+| Old `[slug]` directories deleted | `opportunities/[slug]/`, `news/[slug]/` removed |
+| `slug` added to `NewsData` interface | Required for query-param-based news detail |
+| All links updated | OpportunityCard, news list, homepage use new URLs |
+| Neon removed | `backend/src/lib/neon.ts` deleted, health check simplified to Supabase-only |
+| Backend `.env` cleaned | Removed `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `RESEND_API_KEY`, `CRON_SECRET`; fixed `ADMIN_PASSWORD` |
+| `.env.example` fixed | `SUPABASE_SERVICE_KEY` → `SUPABASE_SERVICE_ROLE_KEY` |
+| `SkeletonCard` deleted | Unused component |
+| Community nav link removed | From Navbar and Footer (page kept as placeholder) |
+| Unused `Users` icon removed | From Navbar imports |
+
+## 11. Immediate Next Steps
 
 | Priority | Action |
 |----------|--------|
