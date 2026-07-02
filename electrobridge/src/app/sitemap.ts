@@ -11,6 +11,8 @@ const STATIC_PAGES: { url: string; freq: "daily" | "hourly" | "weekly" | "monthl
   { url: "https://electrobridge.vercel.app/contact", freq: "monthly", priority: 0.3 },
   { url: "https://electrobridge.vercel.app/match", freq: "monthly", priority: 0.4 },
   { url: "https://electrobridge.vercel.app/chat", freq: "monthly", priority: 0.4 },
+  { url: "https://electrobridge.vercel.app/login", freq: "monthly", priority: 0.2 },
+  { url: "https://electrobridge.vercel.app/signup", freq: "monthly", priority: 0.2 },
 ];
 
 const CATEGORY_PAGES = ["jrf", "srf", "phd", "govt-job", "fellowship", "private", "international"];

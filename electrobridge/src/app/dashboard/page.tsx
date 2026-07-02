@@ -59,6 +59,7 @@ export default function DashboardPage() {
   const [alertCount, setAlertCount] = useState(0);
   const [applications, setApplications] = useState<ApplicationWithOpportunity[]>([]);
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -112,6 +113,19 @@ export default function DashboardPage() {
     .sort((a, b) => new Date(a.opportunity.deadline!).getTime() - new Date(b.opportunity.deadline!).getTime())
     .slice(0, 5);
 
+  const handleStatusChange = async (appId: string, newStatus: string) => {
+    setUpdatingStatus(appId);
+    try {
+      await fetch("/api/applications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: appId, status: newStatus }),
+      });
+      setApplications(prev => prev.map(a => a.id === appId ? { ...a, status: newStatus } : a));
+    } catch {}
+    setUpdatingStatus(null);
+  };
+
   const resumeCircularProgress = resumeScore;
 
   return (
@@ -127,7 +141,7 @@ export default function DashboardPage() {
           </p>
         </div>
         <Link
-          href="/profile"
+          href="/resume"
           className="flex items-center justify-center gap-2 bg-accent text-bg-primary font-semibold rounded-lg px-4 py-2.5 text-sm hover:bg-accent-hover transition-all w-full sm:w-auto"
         >
           <FileText className="w-4 h-4" />
@@ -225,9 +239,16 @@ export default function DashboardPage() {
                         )}
                       </div>
                     </div>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap flex-shrink-0 ${STATUS_STYLES[app.status] || STATUS_STYLES.applied}`}>
-                      {STATUS_LABELS[app.status] || app.status}
-                    </span>
+                    <select
+                      value={app.status}
+                      onChange={(e) => handleStatusChange(app.id, e.target.value)}
+                      disabled={updatingStatus === app.id}
+                      className={`px-2 py-0.5 rounded-lg text-xs font-medium border outline-none cursor-pointer ${STATUS_STYLES[app.status] || STATUS_STYLES.applied}`}
+                    >
+                      {Object.entries(STATUS_LABELS).map(([key, label]) => (
+                        <option key={key} value={key} className="bg-surface text-text-primary">{label}</option>
+                      ))}
+                    </select>
                   </div>
                 ))}
               </div>
@@ -253,27 +274,17 @@ export default function DashboardPage() {
                 </div>
               </div>
               {resumeCircularProgress === 0 && (
-                <p className="text-text-muted text-xs text-center mb-4">Build your resume to receive an ATS score and improvement suggestions</p>
-              )}
-              {resumeCircularProgress > 0 && resumeCircularProgress < 80 && (
-                <div className="w-full">
-                  <p className="text-text-secondary text-xs font-medium mb-2">Areas to improve:</p>
-                  <ul className="space-y-1.5">
-                    <li className="flex items-center gap-2 text-text-muted text-xs">
-                      <span className="w-1.5 h-1.5 rounded-full bg-warning" />
-                      Add more keywords from job descriptions
-                    </li>
-                    <li className="flex items-center gap-2 text-text-muted text-xs">
-                      <span className="w-1.5 h-1.5 rounded-full bg-warning" />
-                      Include quantifiable achievements
-                    </li>
-                    <li className="flex items-center gap-2 text-text-muted text-xs">
-                      <span className="w-1.5 h-1.5 rounded-full bg-warning" />
-                      Tailor your summary to each role
-                    </li>
-                  </ul>
-                  <p className="text-text-muted text-[10px] mt-3 italic">Resume builder coming soon</p>
+                <div className="text-center">
+                  <p className="text-text-muted text-xs text-center mb-4">Build your resume to receive an ATS score and improvement suggestions</p>
+                  <Link href="/resume" className="inline-flex items-center gap-1 bg-accent text-bg-primary rounded-lg px-4 py-2 text-xs font-medium hover:bg-accent-hover transition-colors">
+                    <FileText className="w-3 h-3" /> Build Resume →
+                  </Link>
                 </div>
+              )}
+              {resumeCircularProgress > 0 && (
+                <Link href="/resume" className="text-accent text-xs font-medium hover:underline flex items-center justify-center gap-1">
+                  <FileText className="w-3 h-3" /> View Resume
+                </Link>
               )}
             </div>
           </div>

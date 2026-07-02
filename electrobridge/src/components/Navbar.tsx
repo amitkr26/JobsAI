@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Zap, Menu, X, ChevronDown, Home, Briefcase, Newspaper, Crosshair, Bot, Info, User, LogOut, LayoutDashboard } from "lucide-react";
+import { Zap, Menu, X, ChevronDown, Home, Briefcase, Newspaper, Crosshair, Bot, Info, User, LogOut, LayoutDashboard, FileText, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -32,6 +32,8 @@ const NAV_ITEMS = [
   { href: "/news", label: "News", icon: Newspaper },
   { href: "/match", label: "Find My Match", icon: Crosshair },
   { href: "/chat", label: "Ask AI", icon: Bot },
+  { href: "/community", label: "Community", icon: MessageSquare },
+  { href: "/resume", label: "Resume", icon: FileText },
   { href: "/about", label: "About", icon: Info },
 ];
 
