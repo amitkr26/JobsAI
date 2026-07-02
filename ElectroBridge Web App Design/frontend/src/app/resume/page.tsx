@@ -52,10 +52,10 @@ export default function ResumePage() {
               {step === 0 && (
                 <div className="space-y-4">
                   <h3 className="font-semibold text-white mb-2">Personal Information</h3>
-                  {[['Full Name', 'Arjun Sharma'], ['Email', 'arjun@iitbombay.ac.in'], ['Phone', '+91 98765 43210'], ['LinkedIn', 'linkedin.com/in/arjunsharma'], ['GitHub', 'github.com/arjunsharma-vlsi']].map(([label, placeholder]) => (
+                  {['Full Name', 'Email', 'Phone', 'LinkedIn', 'GitHub'].map((label) => (
                     <div key={label}>
                       <label className="text-xs font-medium text-[#94A3B8] mb-1 block">{label}</label>
-                      <input defaultValue={placeholder} className="w-full px-4 py-2.5 bg-[#111827] border border-[#1F2937] rounded-xl text-sm text-white placeholder:text-[#94A3B8] outline-none focus:border-[#00E5FF]/40 transition-colors" />
+                      <input placeholder={`Enter your ${label.toLowerCase()}`} className="w-full px-4 py-2.5 bg-[#111827] border border-[#1F2937] rounded-xl text-sm text-white placeholder:text-[#94A3B8] outline-none focus:border-[#00E5FF]/40 transition-colors" />
                     </div>
                   ))}
                 </div>
@@ -64,10 +64,10 @@ export default function ResumePage() {
               {step === 1 && (
                 <div className="space-y-4">
                   <h3 className="font-semibold text-white mb-2">Education</h3>
-                  {[['Institution', 'IIT Bombay'], ['Degree', 'B.Tech — Electronics Engineering'], ['Graduation Year', '2025'], ['CGPA', '8.6 / 10']].map(([label, placeholder]) => (
+                  {['Institution', 'Degree', 'Graduation Year', 'CGPA'].map((label) => (
                     <div key={label}>
                       <label className="text-xs font-medium text-[#94A3B8] mb-1 block">{label}</label>
-                      <input defaultValue={placeholder} className="w-full px-4 py-2.5 bg-[#111827] border border-[#1F2937] rounded-xl text-sm text-white outline-none focus:border-[#00E5FF]/40 transition-colors" />
+                      <input placeholder={`Enter your ${label.toLowerCase()}`} className="w-full px-4 py-2.5 bg-[#111827] border border-[#1F2937] rounded-xl text-sm text-white outline-none focus:border-[#00E5FF]/40 transition-colors" />
                     </div>
                   ))}
                 </div>
@@ -77,11 +77,7 @@ export default function ResumePage() {
                 <div className="space-y-4">
                   <h3 className="font-semibold text-white mb-2">Skills</h3>
                   <div className="flex flex-wrap gap-2 p-3 bg-[#111827] border border-[#1F2937] rounded-xl min-h-[80px]">
-                    {['Verilog', 'SystemVerilog', 'Cadence Virtuoso', 'MATLAB', 'Python', 'RTL Design', 'FPGA', 'Embedded C'].map((skill) => (
-                      <Badge key={skill} variant="default">
-                        {skill} <X size={9} className="ml-0.5 cursor-pointer" />
-                      </Badge>
-                    ))}
+                    <p className="text-xs text-[#94A3B8]">No skills added yet.</p>
                   </div>
                   <div className="flex gap-2">
                     <input placeholder="Add a skill…" className="flex-1 px-4 py-2.5 bg-[#111827] border border-[#1F2937] rounded-xl text-sm text-white placeholder:text-[#94A3B8] outline-none focus:border-[#00E5FF]/40 transition-colors" />
@@ -124,21 +120,16 @@ export default function ResumePage() {
               </p>
               <div className="bg-white rounded-2xl p-6 text-[#0B1120] text-xs font-[var(--font-inter)] min-h-[500px] shadow-2xl">
                 <div className="border-b-2 border-[#0B1120] pb-3 mb-3">
-                  <h2 className="text-lg font-bold">Arjun Sharma</h2>
-                  <p className="text-[10px] text-gray-500 mt-0.5">arjun@iitbombay.ac.in · +91 98765 43210</p>
-                  <p className="text-[10px] text-gray-500">linkedin.com/in/arjunsharma · github.com/arjunsharma-vlsi</p>
+                  <h2 className="text-lg font-bold">Your Name</h2>
+                  <p className="text-[10px] text-gray-500 mt-0.5">email@example.com</p>
                 </div>
                 <div className="mb-3">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Education</p>
-                  <p className="font-semibold text-[11px]">IIT Bombay — B.Tech Electronics Engineering</p>
-                  <p className="text-[10px] text-gray-500">2021–2025 · CGPA: 8.6/10</p>
+                  <p className="text-[10px] text-gray-500 italic">Fill in your details to see a preview.</p>
                 </div>
                 <div className="mb-3">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Skills</p>
-                  <p className="text-[10px] leading-relaxed">Verilog · SystemVerilog · Cadence Virtuoso · MATLAB · Python · RTL Design · FPGA · Embedded C</p>
-                </div>
-                <div className="mt-4 p-2 bg-gray-50 rounded-lg border border-gray-200">
-                  <p className="text-[9px] text-gray-400 text-center">ATS Score: 74/100 · 3 improvements suggested</p>
+                  <p className="text-[10px] text-gray-500 italic">Add skills to see them here.</p>
                 </div>
               </div>
               <button className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-[#1F2937] text-sm text-[#94A3B8] hover:text-white hover:border-[#00E5FF]/30 transition-colors">

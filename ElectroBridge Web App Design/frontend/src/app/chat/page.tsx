@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import {
   Bot, Plus, Search, FileText, TrendingUp, BarChart3, Send,
 } from 'lucide-react';
+import { api } from '@/lib/api';
 
 const features = [
   { icon: <Search size={16} />, label: 'Opportunity Matching', color: '#00E5FF' },
@@ -19,35 +20,26 @@ const suggestions = [
   'Career roadmap: B.Tech ECE to chip architect',
 ];
 
-const CHAT_HISTORY_INITIAL = [
-  { role: 'user' as const, text: 'What are the best VLSI internships for final year B.Tech students in 2025?' },
-  {
-    role: 'ai' as const,
-    text: 'Great question! For final-year B.Tech students in 2025, here are the **top VLSI internship opportunities**:\n\n**1. ISRO VSSC/ISAC Internship** — ₹35k/mo stipend, work on satellite ASIC design. Deadline: Aug 15.\n\n**2. Intel India R&D** — AI chip architecture, ₹60k/mo. Requires strong SystemVerilog.\n\n**3. Qualcomm University Program** — Bangalore/Hyderabad. Competitive, strong PPO chance.\n\n**4. IISc Nano-fabrication Lab** — Excellent for those interested in process engineering over design.\n\nI also notice your profile shows proficiency in Cadence Virtuoso. I\'d recommend **applying to ISRO and IISc first** as they weight that tool heavily. Want me to draft a cover letter for ISRO?',
-  },
-];
-
 export default function ChatPage() {
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState(CHAT_HISTORY_INITIAL);
+  const [messages, setMessages] = useState<{ role: string; text: string }[]>([]);
   const [typing, setTyping] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
-    setMessages((m) => [...m, { role: 'user' as const, text: input }]);
+    const userText = input;
+    setMessages((m) => [...m, { role: 'user', text: userText }]);
     setInput('');
     setTyping(true);
-    setTimeout(() => {
-      setMessages((m) => [
-        ...m,
-        {
-          role: 'ai' as const,
-          text: 'I found **12 matching opportunities** based on your query. The top picks are ISRO VSSC VLSI internship (deadline Aug 15, ₹35k/mo) and IISc nano-fab fellowship (deadline Jul 30, ₹42k/mo). Would you like me to analyze your profile fit for either of these?',
-        },
-      ]);
+    try {
+      const res = await api.ai.chat(userText);
+      setMessages((m) => [...m, { role: 'ai', text: res.data.message || 'No response from AI.' }]);
+    } catch {
+      setMessages((m) => [...m, { role: 'ai', text: 'Sorry, I encountered an error. Please try again.' }]);
+    } finally {
       setTyping(false);
-    }, 1800);
+    }
   };
 
   useEffect(() => {

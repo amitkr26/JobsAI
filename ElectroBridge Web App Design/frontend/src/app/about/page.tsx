@@ -7,12 +7,6 @@ const values = [
   { icon: <Sparkles size={18} />, label: 'Innovation', desc: 'AI-powered matching, resume scoring, and personalized career roadmaps built for semiconductor professionals.' },
 ];
 
-const team = [
-  { name: 'Arun Sharma', role: 'Founder & CEO', initials: 'AS', bio: 'Ex-Texas Instruments, 10+ years in semiconductor design.' },
-  { name: 'Neha Patel', role: 'CTO', initials: 'NP', bio: 'Full-stack engineer, previously at Postman and Razorpay.' },
-  { name: 'Dr. Vikram Joshi', role: 'AI Research Lead', initials: 'VJ', bio: 'PhD in ML from IIT Bombay. Focus on NLP for job matching.' },
-];
-
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-[#0B1120]">
@@ -41,34 +35,14 @@ export default function AboutPage() {
 
         <section className="mb-20">
           <h2 className="text-2xl font-bold text-white text-center mb-2">Our Story</h2>
-          <p className="text-[#94A3B8] text-sm text-center mb-8 max-w-xl mx-auto">From a side project to a movement</p>
+          <p className="text-[#94A3B8] text-sm text-center mb-8 max-w-xl mx-auto">Bridging talent and opportunity</p>
           <div className="bg-[#1A2438] border border-[#1F2937] rounded-2xl p-8">
             <p className="text-sm text-[#94A3B8] leading-relaxed mb-4">
-              ElectroBridge was born in 2024 when our founder, Arun Sharma, noticed a glaring gap while mentoring final-year electronics students: hundreds of incredible opportunities — from ISRO internships to DRDO fellowships — were buried in PDFs, circulars, and outdated websites.
-            </p>
-            <p className="text-sm text-[#94A3B8] leading-relaxed mb-4">
-              Students relied on WhatsApp groups and word-of-mouth. Recruiters struggled to find qualified candidates. The semiconductor industry was hiring aggressively, but the bridge between talent and opportunity simply didn&apos;t exist.
+              ElectroBridge was built to solve a simple problem: great opportunities in India&apos;s electronics and semiconductor sectors are scattered across hundreds of websites, PDFs, and circulars. Students and professionals spend more time hunting for openings than preparing for them.
             </p>
             <p className="text-sm text-[#94A3B8] leading-relaxed">
-              Today, ElectroBridge serves 4,200+ verified opportunities to 12,000+ active researchers and engineers — with AI-powered matching, real-time news, and a growing community of professionals shaping India&apos;s semiconductor future.
+              We aggregate verified research fellowships, PhD positions, internships, and engineering roles from ISRO, DRDO, CSIR, IITs, IISc, TIFR, and industry — all in one place. Every listing is verified, AI-enriched, and kept current.
             </p>
-          </div>
-        </section>
-
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-white text-center mb-2">Leadership Team</h2>
-          <p className="text-[#94A3B8] text-sm text-center mb-8">The people behind ElectroBridge</p>
-          <div className="grid md:grid-cols-3 gap-5">
-            {team.map((m) => (
-              <div key={m.name} className="bg-[#1A2438] border border-[#1F2937] rounded-2xl p-6 text-center">
-                <div className="w-14 h-14 rounded-xl bg-[#00E5FF]/10 border border-[#00E5FF]/20 flex items-center justify-center mx-auto mb-3 text-[#00E5FF] text-lg font-bold">
-                  {m.initials}
-                </div>
-                <h3 className="font-semibold text-white text-sm">{m.name}</h3>
-                <p className="text-xs text-[#00E5FF] mb-2">{m.role}</p>
-                <p className="text-xs text-[#94A3B8]">{m.bio}</p>
-              </div>
-            ))}
           </div>
         </section>
       </div>

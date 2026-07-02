@@ -1,14 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-  Shield, Briefcase, Link, Flag, Bot, Search, Filter,
-  Plus, Eye, CheckCircle, Trash2, RefreshCw,
-} from 'lucide-react';
+import { Shield, Briefcase, RefreshCw, Eye, CheckCircle, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getOpportunities, OpportunityData } from '@/data/opportunities';
 
-const modules = ['Opportunities', 'Verification Queue', 'News', 'Reports', 'Analytics', 'AI Usage', 'Broken Links'];
+const modules = ['Opportunities'];
 
 export default function AdminPage() {
   const [activeModule, setActiveModule] = useState('Opportunities');
@@ -64,18 +61,15 @@ export default function AdminPage() {
             <Badge variant="green">
               <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] inline-block mr-1" /> System Normal
             </Badge>
-            <button className="px-3 py-1.5 rounded-xl bg-[#00E5FF]/10 border border-[#00E5FF]/25 text-[#00E5FF] text-sm font-medium hover:bg-[#00E5FF]/15 transition-colors">
-              <Plus size={13} className="inline mr-1" />Add New
-            </button>
           </div>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
           {[
             { icon: <Briefcase size={15} />, label: 'Verified Opportunities', value: String(opportunities.length), color: '#00E5FF' },
-            { icon: <Link size={15} />, label: 'Broken Links', value: 'N/A', color: '#EF4444' },
-            { icon: <Flag size={15} />, label: 'User Reports', value: 'N/A', color: '#F59E0B' },
-            { icon: <Bot size={15} />, label: 'AI Requests (24h)', value: 'N/A', color: '#10B981' },
+            { icon: <Briefcase size={15} />, label: 'Organizations', value: String([...new Set(opportunities.map((o) => o.org))].length), color: '#3B82F6' },
+            { icon: <Briefcase size={15} />, label: 'Total Records', value: String(opportunities.length), color: '#10B981' },
+            { icon: <Briefcase size={15} />, label: 'AI Requests (24h)', value: '—', color: '#F59E0B' },
           ].map((s) => (
             <div key={s.label} className="bg-[#1A2438] border border-[#1F2937] rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
@@ -93,15 +87,6 @@ export default function AdminPage() {
         <div className="bg-[#1A2438] border border-[#1F2937] rounded-2xl overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-[#1F2937]">
             <h3 className="text-sm font-semibold text-white">Verified Opportunities</h3>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-[#111827] border border-[#1F2937] rounded-lg">
-                <Search size={12} className="text-[#94A3B8]" />
-                <input placeholder="Search…" className="bg-transparent text-xs text-white placeholder:text-[#94A3B8] outline-none w-32" />
-              </div>
-              <button className="p-1.5 rounded-lg border border-[#1F2937] text-[#94A3B8] hover:text-white">
-                <Filter size={13} />
-              </button>
-            </div>
           </div>
           {loading ? (
             <div className="text-center py-12">
